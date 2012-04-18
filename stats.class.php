@@ -370,7 +370,12 @@ $stats['iwp_next_backups'] = $this->get_backup_instance()->get_next_schedules();
         
         global $wpdb, $iwp_mmb_wp_version, $iwp_mmb_plugin_dir, $wp_version, $wp_local_package;
         
+		$current = get_site_transient( 'update_plugins' );
+		$r = $current->response['iwp-client/init.php'];
+		
         $stats['client_version']        = IWP_MMB_CLIENT_VERSION;
+		$stats['client_new_version']    = $r->new_version;
+		$stats['client_new_package']   	= $r->package;
         $stats['wordpress_version']     = $wp_version;
         $stats['wordpress_locale_pckg'] = $wp_local_package;
         $stats['php_version']           = phpversion();
@@ -479,17 +484,22 @@ $stats['iwp_next_backups'] = $this->get_backup_instance()->get_next_schedules();
         
         $stats = array();
         
-        $stats['email']           = get_option('admin_email');
-        $stats['no_openssl']      = $this->get_random_signature();
-        $stats['content_path']    = WP_CONTENT_DIR;
-        $stats['client_path']     = $iwp_mmb_plugin_dir;
-        $stats['client_version']  = IWP_MMB_CLIENT_VERSION;
-        $stats['site_title']      = get_bloginfo('name');
-        $stats['site_tagline']    = get_bloginfo('description');
-        $stats['site_home']       = get_option('home');
-        $stats['admin_url']       = admin_url();
-        $stats['wp_multisite']    = $this->iwp_mmb_multisite;
-        $stats['network_install'] = $this->network_admin_install;
+		$current = get_site_transient( 'update_plugins' );
+		$r = $current->response['iwp-client/init.php'];
+		
+        $stats['email']           			= get_option('admin_email');
+        $stats['no_openssl']      			= $this->get_random_signature();
+        $stats['content_path']    			= WP_CONTENT_DIR;
+        $stats['client_path']     			= $iwp_mmb_plugin_dir;
+        $stats['client_version'] 			= IWP_MMB_CLIENT_VERSION;
+		$stats['client_new_version']        = $r->new_version;
+		$stats['client_new_package']       	= $r->package;
+        $stats['site_title']      			= get_bloginfo('name');
+        $stats['site_tagline']    			= get_bloginfo('description');
+        $stats['site_home']       			= get_option('home');
+        $stats['admin_url']      			= admin_url();
+        $stats['wp_multisite']    			= $this->iwp_mmb_multisite;
+        $stats['network_install'] 			= $this->network_admin_install;
         
         if ($this->iwp_mmb_multisite) {
             $details = get_blog_details($this->iwp_mmb_multisite);

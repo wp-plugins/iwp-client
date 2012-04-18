@@ -345,6 +345,7 @@ function task_now($task_name){
                     $archive = new PclZip($backup_file);
                     if ($disable_comp) {
                         $result = $archive->add($db_result, PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR, PCLZIP_OPT_NO_COMPRESSION);
+						
                     } else {
                         $result = $archive->add($db_result, PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR);
                     }
@@ -380,10 +381,10 @@ function task_now($task_name){
             //backup task (scheduled)
             $backup_settings = $this->tasks;
             $paths           = array();
-            $size            = ceil(filesize($backup_file) / 1024);
+            $size            = round(filesize($backup_file) / 1024, 2);
             
             if ($size > 1000) {
-                $paths['size'] = ceil($size / 1024) . "MB";//Modified by IWP //Mb => MB
+                $paths['size'] = round($size / 1024, 2) . " MB";//Modified by IWP //Mb => MB
             } else {
                 $paths['size'] = $size . 'KB';//Modified by IWP //Kb => KB
             }
