@@ -5,23 +5,23 @@ Requires at least: 3.0
 Tested up to: 3.3.2
 Stable tag: trunk
 
-This is the client plugin of InfiniteWP that communicates with the InfiniteWP Admin panel.
+This is the client plugin of InfiniteWP that communicates with the InfiniteWP Admin Panel.
 
 == Description ==
 
-[InfiniteWP](http://infinitewp.com/ "Manage Multiple Wordpress") allows users to manage unlimited number of Wordpress sites from your own server.
+[InfiniteWP](http://infinitewp.com/ "Manage Multiple Wordpress") allows users to manage unlimited number of Wordpress sites from their own server.
 
 Main features:
 
 *   Self-hosted system: Resides on your own server and totally under your control
-*   One-click upgrades for WordPress, plugin and themes across all your sites
+*   One-click updates for WordPress, plugins and themes across all your sites
 *   Instant backup and restore your entire site or just the database
 *   One-click access to all WP admin panels
 *   Bulk Manage plugins & themes: Activate & Deactive multiple plugins & themes on multiple sites simultaneously
 *   Bulk Install plugins & themes in multiple sites at once
 *   and more..
 
-Check out the [InfiniteWP Overview Video](http://www.youtube.com/watch?v=mam6hA-CKGc).
+Check out the [InfiniteWP Overview Video](http://www.youtube.com/watch?v=mam6hA-CKGc) below.
 
 http://www.youtube.com/watch?v=mam6hA-CKGc
 
@@ -39,7 +39,7 @@ Check out [InfiniteWP.com](http://infinitewp.com/ "Manage Multiple Wordpress").
 1. Sites & Group Management
 2. Search Wordpress Plugin Repository
 3. Bulk Plugin & Theme Management
-4. One-click access to admin panel
+4. One-click access to Wordpress admin panels
 5. One-click updates
 
 == Changelog == 
