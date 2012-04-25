@@ -9,7 +9,7 @@ This is the client plugin of InfiniteWP that communicates with the InfiniteWP Ad
 
 == Description ==
 
-[InfiniteWP](http://infinitewp.com/ "Manage Multiple Wordpress") allows users to manage unlimited number of Wordpress sites from a single central location.
+[InfiniteWP](http://infinitewp.com/ "Manage Multiple Wordpress") allows users to manage unlimited number of Wordpress sites from your own server.
 
 Main features:
 
@@ -31,7 +31,8 @@ Check out [InfiniteWP.com](http://infinitewp.com/ "Manage Multiple Wordpress").
 
 1. Upload the plugin folder to your /wp-content/plugins/ folder
 2. Go to the Plugins page and activate InfiniteWP Client
-3. Visit [InfiniteWP.com](http://infinitewp.com/ "Manage Multiple Wordpress"), download the free InfiniteWP Admin Panel & install on your server.
+3. If you have not yet installed the InfiniteWP Admin Panel, visit [InfiniteWP.com](http://infinitewp.com/ "Manage Multiple Wordpress"), download the free InfiniteWP Admin Panel & install on your server.
+4. Add your Wordpress site to the InfiniteWP Admin Panel and start using it.
 
 == Screenshots ==
 
