@@ -6,7 +6,7 @@ Tested up to: 3.3.2
 Stable tag: trunk
 
 Install this plugin on unlimited sites and manage them all from a central dashboard.
-This plugin communicates with your InfiniteWP Admin Panel to perform all operations.
+This plugin communicates with your InfiniteWP Admin Panel.
 
 == Description ==
 
