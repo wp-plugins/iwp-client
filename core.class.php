@@ -82,8 +82,8 @@ class IWP_MMB_Core extends IWP_MMB_Helper
 				if( is_network_admin() && $this->network_admin_install == '1'){
 					add_action('network_admin_notices', array( &$this, 'network_admin_notice' ));
 				} else if( $this->network_admin_install != '1' ){
-					$parent_key = $this->get_parent_blog_option('iwp_client_public_key');
-					if(empty($parent_key))
+					//$parent_key = $this->get_parent_blog_option('iwp_client_public_key');//IWP commented to show notice to all subsites of network
+					//if(empty($parent_key))//IWP commented to show notice to all subsites of network
 						add_action('admin_notices', array( &$this, 'admin_notice' ));
 				}
 			} else {
@@ -193,9 +193,8 @@ class IWP_MMB_Core extends IWP_MMB_Helper
      */
     function network_admin_notice()
     {
-        echo '<div class="error" style="text-align: center;"><p style="color: red; font-size: 14px; font-weight: bold;">Attention !</p><p>
-	  	Please add this site and your network blogs, with your network adminstrator username, to your <a target="_blank" href="http://infinitewp.com/wp-admin">InfiniteWP.com</a> account now to remove this notice or "Network Deactivate" the Client plugin to avoid <a target="_blank" href="http://infinitewp.com/user-guide/security">security issues</a>.	  	
-	  	</p></div>';
+        echo '<div class="error" style="text-align: center;"><p style="font-size: 14px; font-weight: bold; color:#c00;">Attention !</p>
+		<p>The InfiniteWP client plugin has to be activated on individual sites. Kindly deactivate the plugin from the network admin dashboard and activate them from the individual dashboards.</p></div>';
     }
 	
 		
@@ -206,14 +205,21 @@ class IWP_MMB_Core extends IWP_MMB_Helper
     function admin_notice()
     {
        /* IWP */
-	   /* echo '<div class="error" style="text-align: center;"><p style="color: red; font-size: 14px; font-weight: bold;">Attention !</p><p>
-	  	Please add this site now to your <a target="_blank" href="http://infinitewp.com/wp-admin">InfiniteWP.com</a> account.  Or deactivate the Client plugin to avoid <a target="_blank" href="http://infinitewp.com/user-guide/security">security issues</a>.	  	
-	  	</p></div>';*/
-		$current_user = wp_get_current_user(); 
+		if(defined('MULTISITE') && MULTISITE == true){	
+			global $blog_id;			
+			$user_id_from_email = get_user_id_from_string( get_blog_option($blog_id, 'admin_email'));
+			$details = get_userdata($user_id_from_email);
+			$username = $details->user_login;			
+		}
+		else{
+			$current_user = wp_get_current_user(); 
+			$username = $current_user->data->user_login;
+		}		
+		
 		echo '<div class="updated" style="text-align: center;"><p style="color: green; font-size: 14px; font-weight: bold;">Add this site to IWP Admin panel</p><p>
 		<table border="0" align="center">
 		<tr><td align="right">WEBSITE URL:</td><td align="left"><strong>'.get_option('home').'/</strong></td></tr>
-		<tr><td align="right">ADMIN USERNAME:</td><td align="left"><strong>'.$current_user->data->user_login.'</strong> (or any admin id)</td></tr>
+		<tr><td align="right">ADMIN USERNAME:</td><td align="left"><strong>'.$username.'</strong> (or any admin id)</td></tr>
 	  	<tr><td align="right">ACTIVATION KEY:</td><td align="left"><strong>'.get_option('iwp_client_activate_key').'</strong></td></tr>	
 		</table>
 	  	</p></div>';
@@ -536,7 +542,7 @@ class IWP_MMB_Core extends IWP_MMB_Helper
             
             if (!$this->is_server_writable()) {
                 return array(
-                    'error' => 'Failed, please <a target="_blank" href="http://infinitewp.com/user-guide#ftp">add FTP details for automatic upgrades.</a></a>'
+                    'error' => 'Failed, please add FTP details for automatic upgrades.'
                 );
             }
             
