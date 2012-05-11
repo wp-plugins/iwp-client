@@ -133,7 +133,7 @@ class IWP_MMB_Installer extends IWP_MMB_Core
         
         if (!$this->is_server_writable()) {
             return array(
-                'error' => 'Failed, please <a target="_blank" href="http://infinitewp.com/user-guide#ftp">add FTP details</a></a>'
+                'error' => 'Failed, please add FTP details'
             );
         }
         
@@ -651,20 +651,6 @@ class IWP_MMB_Installer extends IWP_MMB_Core
                     }
                     
                 }
-                /***************** Displaying all plugins so Not using serach function -  Commented by IWP ******************/
-                /*if ($search) {
-                    foreach ($plugins['active'] as $k => $plugin) {
-                        if (!stristr($plugin['name'], $search)) {
-                            unset($plugins['active'][$k]);
-                        }
-                    }
-                    
-                    foreach ($plugins['inactive'] as $k => $plugin) {
-                        if (!stristr($plugin['name'], $search)) {
-                            unset($plugins['inactive'][$k]);
-                        }
-                    }
-                }*/
             }
         }
         

@@ -10,7 +10,7 @@ This plugin communicates with your InfiniteWP Admin Panel.
 
 == Description ==
 
-[InfiniteWP](http://infinitewp.com/ "Manage Multiple Wordpress") allows users to manage unlimited number of Wordpress sites from their own server.
+[InfiniteWP](http://infinitewp.com/ "Manage Multiple WordPress") allows users to manage unlimited number of WordPress sites from their own server.
 
 Main features:
 
@@ -26,24 +26,28 @@ Check out the [InfiniteWP Overview Video](http://www.youtube.com/watch?v=IOu7Ldy
 
 http://www.youtube.com/watch?v=IOu7LdyPOSs
 
-Check out [InfiniteWP.com](http://infinitewp.com/ "Manage Multiple Wordpress").
+Check out [InfiniteWP.com](http://infinitewp.com/ "Manage Multiple WordPress").
 
 == Installation ==
 
 1. Upload the plugin folder to your /wp-content/plugins/ folder
 2. Go to the Plugins page and activate InfiniteWP Client
-3. If you have not yet installed the InfiniteWP Admin Panel, visit [InfiniteWP.com](http://infinitewp.com/ "Manage Multiple Wordpress"), download the free InfiniteWP Admin Panel & install on your server.
-4. Add your Wordpress site to the InfiniteWP Admin Panel and start using it.
+3. If you have not yet installed the InfiniteWP Admin Panel, visit [InfiniteWP.com](http://infinitewp.com/ "Manage Multiple WordPress"), download the free InfiniteWP Admin Panel & install on your server.
+4. Add your WordPress site to the InfiniteWP Admin Panel and start using it.
 
 == Screenshots ==
 
 1. Sites & Group Management
-2. Search Wordpress Plugin Repository
+2. Search WordPress Plugin Repository
 3. Bulk Plugin & Theme Management
-4. One-click access to Wordpress admin panels
+4. One-click access to WordPress admin panels
 5. One-click updates
 
 == Changelog == 
+
+= 1.0.1 =  
+* WordPress Multisite support
+* Bugs fixed
 
 = 1.0.0 =  
 * Public release

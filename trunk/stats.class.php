@@ -240,13 +240,7 @@ class IWP_MMB_Stats extends IWP_MMB_Core
     
     function get_backups($stats, $options = array())
     {
-        $stats['iwp_backups']      = $this->get_backup_instance()->get_backup_stats();
-        /*
-//IWP Remove starts here
-$stats['iwp_next_backups'] = $this->get_backup_instance()->get_next_schedules();
-//IWP Remove ends here
-*/
-        
+        $stats['iwp_backups']      = $this->get_backup_instance()->get_backup_stats();       
         return $stats;
     }
     
@@ -749,8 +743,6 @@ $stats['iwp_next_backups'] = $this->get_backup_instance()->get_next_schedules();
         		delete_option('iwp_client_pageview_alerts');
         	}
         }  
-        
-        
     }
     
     

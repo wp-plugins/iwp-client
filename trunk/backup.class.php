@@ -82,14 +82,6 @@ class IWP_MMB_Backup extends IWP_MMB_Core
             'db_dump' => 1,
             'db_zip' => 2,
             'files_zip' => 3,
-            /*
-//IWP Remove starts here
-'s3' => 4,
-            'dropbox' => 5,
-            'ftp' => 6,
-            'email' => 7,
-//IWP Remove ends here
-*/
             'finished' => 100
         );
         $this->tasks     = get_option('iwp_client_backup_tasks');
@@ -121,20 +113,8 @@ class IWP_MMB_Backup extends IWP_MMB_Core
                     'removed' => true
                 );
             } else {
-                /*
-//IWP Remove starts here
-if (is_array($params['account_info'])) { //only if sends from IWP Admin Panel first time(secure data)
-                    $args['account_info'] = $account_info;
-                }
-//IWP Remove ends here
-*/    
+        
                 $before[$task_name]['task_args'] = $args;
-                /*
-//IWP Remove starts here
-if (strlen($args['schedule']))
-                    $before[$task_name]['task_args']['next'] = $this->schedule_next($args['type'], $args['schedule']);
-//IWP Remove ends here
-*/
                 $return = $before[$task_name];
             }
             
@@ -229,44 +209,6 @@ if (strlen($args['schedule']))
         }
         
     }
-    
-    /*
-//IWP Remove starts here
-function task_now($task_name){
-
-    	 $settings = $this->tasks;
-    	 if(!array_key_exists($task_name,$settings)){
-    	 	return array('error' => $task_name." does not exist.");
-    	 } else {
-    	 	$setting = $settings[$task_name];
-    	 }    
-       
-       $this->set_backup_task(array(
-                        'task_name' => $task_name,
-                        'args' => $settings[$task_name]['task_args'],
-                        'time' => time()
-                    ));
-      
-      //Run backup              
-      $result = $this->backup($setting['task_args'], $task_name);
-      
-      //Check for error
-      if (is_array($result) && array_key_exists('error', $result)) {
-                        $this->set_backup_task(array(
-                            'task_name' => $task_name,
-                            'args' => $settings[$task_name]['task_args'],
-                            'error' => $result['error']
-                        ));
-        return $result;
-       } else {
-       	return $this->get_backup_stats();
-       }
-        
-    }
-//IWP Remove ends here
-*/
-    
-    
     
     /*
      * If Task Name not set then it's manual backup
@@ -404,27 +346,7 @@ function task_now($task_name){
                     'file_url' => $backup_url
                 );
             }
-            
-            /*
-//IWP Remove starts here
-if (isset($backup_settings[$task_name]['task_args']['account_info']['iwp_ftp'])) {
-                $paths['ftp'] = basename($backup_url);
-            }
-            
-            if (isset($backup_settings[$task_name]['task_args']['account_info']['iwp_amazon_s3'])) {
-                $paths['amazons3'] = basename($backup_url);
-            }
-            
-            if (isset($backup_settings[$task_name]['task_args']['account_info']['iwp_dropbox'])) {
-                $paths['dropbox'] = basename($backup_url);
-            }
-            
-            if (isset($backup_settings[$task_name]['task_args']['account_info']['iwp_email'])) {
-                $paths['email'] = basename($backup_url);
-            }
-//IWP Remove ends here
-*/
-            
+             
             $temp          = $backup_settings[$task_name]['task_results'];
             $temp          = array_values($temp);
             $paths['time'] = time();
@@ -443,71 +365,9 @@ if (isset($backup_settings[$task_name]['task_args']['account_info']['iwp_ftp']))
             //update_option('iwp_client_backup_tasks', $backup_settings);
         }
         
-        
         //Additional: Email, ftp, amazon_s3, dropbox...
         
         if ($task_name != 'Backup Now') {
-            /*
-//IWP Remove starts here
-if (isset($account_info['iwp_ftp']) && !empty($account_info['iwp_ftp'])) {
-                $this->update_status($task_name, $this->statuses['ftp']);
-                $account_info['iwp_ftp']['backup_file'] = $backup_file;
-                $ftp_result                             = $this->ftp_backup($account_info['iwp_ftp']);
-                
-                if ($ftp_result !== true && $del_host_file) {
-                    @unlink($backup_file);
-                }
-                
-                if (is_array($ftp_result) && isset($ftp_result['error'])) {
-                    return $ftp_result;
-                }
-                $this->wpdb_reconnect();
-                $this->update_status($task_name, $this->statuses['ftp'], true);
-            }
-            
-            if (isset($account_info['iwp_amazon_s3']) && !empty($account_info['iwp_amazon_s3'])) {
-                $this->update_status($task_name, $this->statuses['s3']);
-                $account_info['iwp_amazon_s3']['backup_file'] = $backup_file;
-                $amazons3_result                              = $this->amazons3_backup($account_info['iwp_amazon_s3']);
-                if ($amazons3_result !== true && $del_host_file) {
-                    @unlink($backup_file);
-                }
-                if (is_array($amazons3_result) && isset($amazons3_result['error'])) {
-                    return $amazons3_result;
-                }
-                $this->wpdb_reconnect();
-                $this->update_status($task_name, $this->statuses['s3'], true);
-            }
-            
-            if (isset($account_info['iwp_dropbox']) && !empty($account_info['iwp_dropbox'])) {
-                $this->update_status($task_name, $this->statuses['dropbox']);
-                $account_info['iwp_dropbox']['backup_file'] = $backup_file;
-                $dropbox_result                             = $this->dropbox_backup($account_info['iwp_dropbox']);
-                if ($dropbox_result !== true && $del_host_file) {
-                    @unlink($backup_file);
-                }
-                
-                if (is_array($dropbox_result) && isset($dropbox_result['error'])) {
-                    return $dropbox_result;
-                }
-                $this->wpdb_reconnect();
-                $this->update_status($task_name, $this->statuses['dropbox'], true);
-            }
-            
-            if (isset($account_info['iwp_email']) && !empty($account_info['iwp_email'])) {
-                $this->update_status($task_name, $this->statuses['email']);
-                $account_info['iwp_email']['task_name'] = $task_name;
-                $account_info['iwp_email']['file_path'] = $backup_file;
-                
-                $email_result = $this->email_backup($account_info['iwp_email']);
-                if (is_array($email_result) && isset($email_result['error'])) {
-                    return $email_result;
-                }
-                $this->update_status($task_name, $this->statuses['email'], true);
-            }
-//IWP Remove ends here
-*/
-            
             if ($del_host_file) {
                 @unlink($backup_file);
             }
@@ -859,31 +719,7 @@ if (isset($account_info['iwp_ftp']) && !empty($account_info['iwp_ftp'])) {
             if (isset($task['task_results'][$result_id]['server'])) {
                 $backup_file = $task['task_results'][$result_id]['server']['file_path'];
                 $unlink_file = false; //Don't delete file if stored on server
-            } /*
-//IWP Remove starts here
-elseif (isset($task['task_results'][$result_id]['ftp'])) {
-                $ftp_file            = $task['task_results'][$result_id]['ftp'];
-                $args                = $task['task_args']['account_info']['iwp_ftp'];
-                $args['backup_file'] = $ftp_file;
-                $backup_file         = $this->get_ftp_backup($args);
-                if ($backup_file == false) {
-                    return array(
-                        'error' => 'Failed to download file from FTP.'
-                    );
-                }
-            } elseif (isset($task['task_results'][$result_id]['amazons3'])) {
-                $amazons3_file       = $task['task_results'][$result_id]['amazons3'];
-                $args                = $task['task_args']['account_info']['iwp_amazon_s3'];
-                $args['backup_file'] = $ftp_file;
-                $backup_file         = $this->get_amazons3_backup($args);
-                if ($backup_file == false) {
-                    return array(
-                        'error' => 'Failed to download file from Amazon S3.'
-                    );
-                }
-            }
-//IWP Remove ends here
-*/
+            } 
             
             $what = $tasks[$task_name]['task_args']['what'];
         }
@@ -1343,351 +1179,7 @@ elseif (isset($task['task_results'][$result_id]['ftp'])) {
         
         return $reqs;
     }
-    
-    /*
-//IWP Remove starts here
-function email_backup($args)
-    {
-        $email = $args['email'];
         
-        if (!is_email($email)) {
-            return array(
-                'error' => 'Your email (' . $email . ') is not correct'
-            );
-        }
-        $backup_file = $args['file_path'];
-        $task_name   = isset($args['task_name']) ? $args['task_name'] : '';
-        if (file_exists($backup_file) && $email) {
-            $attachments = array(
-                $backup_file
-            );
-            $headers     = 'From: InfiniteWP <no-reply@infinitewp.com>' . "\r\n";
-            $subject     = "InfiniteWP - " . $task_name . " - " . $this->site_name;
-            ob_start();
-            $result = wp_mail($email, $subject, $subject, $headers, $attachments);
-            ob_end_clean();
-            
-        }
-        
-        if (!$result) {
-            return array(
-                'error' => 'Email not sent. Maybe your backup is too big for email or email server is not available on your website.'
-            );
-        }
-        return true;
-        
-    }
-    
-    function ftp_backup($args)
-    {
-        extract($args);
-        //Args: $ftp_username, $ftp_password, $ftp_hostname, $backup_file, $ftp_remote_folder, $ftp_site_folder
-        $port = $ftp_port ? $ftp_port : 21; //default port is 21
-        if ($ftp_ssl) {
-            if (function_exists('ftp_ssl_connect')) {
-                $conn_id = ftp_ssl_connect($ftp_hostname,$port);
-            } else {
-                return array(
-                    'error' => 'Your server doesn\'t support SFTP',
-                    'partial' => 1
-                );
-            }
-        } else {
-            if (function_exists('ftp_connect')) {
-                $conn_id = ftp_connect($ftp_hostname,$port);
-                if ($conn_id === false) {
-                    return array(
-                        'error' => 'Failed to connect to ' . $ftp_hostname,
-                        'partial' => 1
-                    );
-                }
-            } else {
-                return array(
-                    'error' => 'Your server doesn\'t support FTP',
-                    'partial' => 1
-                );
-            }
-        }
-        $login = @ftp_login($conn_id, $ftp_username, $ftp_password);
-        if ($login === false) {
-            return array(
-                'error' => 'FTP login failed for ' . $ftp_username . ', ' . $ftp_password,
-                'partial' => 1
-            );
-        }
-        
-        if($ftp_passive){
-					@ftp_pasv($conn_id,true);
-				}
-				
-        @ftp_mkdir($conn_id, $ftp_remote_folder);
-        if ($ftp_site_folder) {
-            $ftp_remote_folder .= '/' . $this->site_name;
-        }
-        @ftp_mkdir($conn_id, $ftp_remote_folder);
-        
-        $upload = @ftp_put($conn_id, $ftp_remote_folder . '/' . basename($backup_file), $backup_file, FTP_BINARY);
-        
-        if ($upload === false) { //Try ascii
-            $upload = @ftp_put($conn_id, $ftp_remote_folder . '/' . basename($backup_file), $backup_file, FTP_ASCII);
-        }
-        ftp_close($conn_id);
-        
-        if ($upload === false) {
-            return array(
-                'error' => 'Failed to upload file to FTP. Please check your specified path.',
-                'partial' => 1
-            );
-        }
-        
-        return true;
-    }
-    
-    function remove_ftp_backup($args)
-    {
-        extract($args);
-        //Args: $ftp_username, $ftp_password, $ftp_hostname, $backup_file, $ftp_remote_folder
-        $port = $ftp_port ? $ftp_port : 21; //default port is 21
-        if ($ftp_ssl && function_exists('ftp_ssl_connect')) {
-            $conn_id = ftp_ssl_connect($ftp_hostname,$port);
-        } else if (function_exists('ftp_connect')) {
-            $conn_id = ftp_connect($ftp_hostname,$port);
-        }
-        
-        if ($conn_id) {
-            $login = @ftp_login($conn_id, $ftp_username, $ftp_password);
-            if ($ftp_site_folder)
-                $ftp_remote_folder .= '/' . $this->site_name;
-            
-            if($ftp_passive){
-							@ftp_pasv($conn_id,true);
-						}
-						
-            $delete = ftp_delete($conn_id, $ftp_remote_folder . '/' . $backup_file);
-            
-            ftp_close($conn_id);
-        }
-        
-    }
-    
-    function get_ftp_backup($args)
-    {
-        extract($args);
-        //Args: $ftp_username, $ftp_password, $ftp_hostname, $backup_file, $ftp_remote_folder
-        $port = $ftp_port ? $ftp_port : 21; //default port is 21
-        if ($ftp_ssl && function_exists('ftp_ssl_connect')) {
-            $conn_id = ftp_ssl_connect($ftp_hostname,$port);
-            
-        } else if (function_exists('ftp_connect')) {
-            $conn_id = ftp_connect($ftp_hostname,$port);
-            if ($conn_id === false) {
-                return false;
-            }
-        } 
-        $login = @ftp_login($conn_id, $ftp_username, $ftp_password);
-        if ($login === false) {
-            return false;
-        } else {
-        }
-        
-        if ($ftp_site_folder)
-            $ftp_remote_folder .= '/' . $this->site_name;
-        
-        if($ftp_passive){
-					@ftp_pasv($conn_id,true);
-				}
-        
-        $temp = ABSPATH . 'iwp_temp_backup.zip';
-        $get  = ftp_get($conn_id, $temp, $ftp_remote_folder . '/' . $backup_file, FTP_BINARY);
-        if ($get === false) {
-            return false;
-        } else {
-        }
-        ftp_close($conn_id);
-        
-        return $temp;
-    }
-    
-    function dropbox_backup($args)
-    {
-        require_once('lib/dropbox.php');
-        extract($args);
-        
-        //$email, $password, $backup_file, $destination, $dropbox_site_folder
-        
-        $size = ceil(filesize($backup_file) / 1024);
-        if ($size > 300000) {
-            return array(
-                'error' => 'Cannot upload file to Dropbox. Dropbox has upload limit of 300Mb per file.',
-                'partial' => 1
-            );
-        }
-        
-        if ($dropbox_site_folder == true)
-            $dropbox_destination .= '/' . $this->site_name;
-        
-        try {
-            $uploader = new DropboxUploader($dropbox_username, $dropbox_password);
-            $uploader->upload($backup_file, $dropbox_destination);
-        }
-        catch (Exception $e) {
-            return array(
-                'error' => $e->getMessage(),
-                'partial' => 1
-            );
-        }
-        
-        return true;
-        
-    }
-    
-    function amazons3_backup($args)
-    {
-        if ($this->iwp_mmb_function_exists('curl_init')) {
-            require_once('lib/s3.php');
-            extract($args);
-            
-            if ($as3_site_folder == true)
-                $as3_directory .= '/' . $this->site_name;
-            
-            $endpoint = isset($as3_bucket_region) ? $as3_bucket_region : 's3.amazonaws.com';
-            
-            $s3 = new S3(trim($as3_access_key), trim(str_replace(' ', '+', $as3_secure_key)), false, $endpoint);
-            
-            $s3->putBucket($as3_bucket, S3::ACL_PUBLIC_READ);
-            
-            if ($s3->putObjectFile($backup_file, $as3_bucket, $as3_directory . '/' . basename($backup_file), S3::ACL_PRIVATE)) {
-                return true;
-            } else {
-                return array(
-                    'error' => 'Failed to upload to Amazon S3. Please check your details and set upload/delete permissions on your bucket.',
-                    'partial' => 1
-                );
-            }
-        } else {
-            return array(
-                'error' => 'You cannot use Amazon S3 on your server. Please enable curl first.',
-                'partial' => 1
-            );
-        }
-    }
-    
-    function remove_amazons3_backup($args)
-    {
-        require_once('lib/s3.php');
-        extract($args);
-        if ($as3_site_folder == true)
-            $as3_directory .= '/' . $this->site_name;
-        $endpoint = isset($as3_bucket_region) ? $as3_bucket_region : 's3.amazonaws.com';
-        $s3       = new S3($as3_access_key, str_replace(' ', '+', $as3_secure_key), false, $endpoint);
-        $s3->deleteObject($as3_bucket, $as3_directory . '/' . $backup_file);
-    }
-    
-    function get_amazons3_backup($args)
-    {
-        require_once('lib/s3.php');
-        extract($args);
-        $endpoint = isset($as3_bucket_region) ? $as3_bucket_region : 's3.amazonaws.com';
-        $s3       = new S3($as3_access_key, str_replace(' ', '+', $as3_secure_key), false, $endpoint);
-        if ($as3_site_folder == true)
-            $as3_directory .= '/' . $this->site_name;
-        
-        $temp = ABSPATH . 'iwp_temp_backup.zip';
-        $s3->getObject($as3_bucket, $as3_directory . '/' . $backup_file, $temp);
-        
-        return $temp;
-    }
-    
-    function schedule_next($type, $schedule)
-    {
-        $schedule = explode("|", $schedule);
-        if (empty($schedule))
-            return false;
-        switch ($type) {
-            
-            case 'daily':
-                
-                if ($schedule[1]) {
-                    $delay_time = $schedule[1] * 60;
-                }
-                
-                $current_hour  = date("H");
-                $schedule_hour = $schedule[0];
-                if ($current_hour >= $schedule_hour){
-                    $time = mktime($schedule_hour, 0, 0, date("m"), date("d") + 1, date("Y"));
-					//$time ='0001#'.$current_hour.'|'.$schedule_hour;
-				}
-                else{
-                    $time = mktime($schedule_hour, 0, 0, date("m"), date("d"), date("Y"));
-					//$time ='0000#'.$current_hour.'|'.$schedule_hour;
-				}
-				$time = time() + 30;
-                break;
-            
-            
-            case 'weekly':
-                if ($schedule[2]) {
-                    $delay_time = $schedule[2] * 60;
-                }
-                $current_weekday  = date('w');
-                $schedule_weekday = $schedule[1];
-                $current_hour     = date("H");
-                $schedule_hour    = $schedule[0];
-                
-                if ($current_weekday > $schedule_weekday)
-                    $weekday_offset = 7 - ($week_day - $task_schedule[1]);
-                else
-                    $weekday_offset = $schedule_weekday - $current_weekday;
-                
-                
-                if (!$weekday_offset) { //today is scheduled weekday
-                    if ($current_hour >= $schedule_hour)
-                        $time = mktime($schedule_hour, 0, 0, date("m"), date("d") + 7, date("Y"));
-                    else
-                        $time = mktime($schedule_hour, 0, 0, date("m"), date("d"), date("Y"));
-                } else {
-                    $time = mktime($schedule_hour, 0, 0, date("m"), date("d") + $weekday_offset, date("Y"));
-                }
-                
-                break;
-            
-            case 'monthly':
-                if ($schedule[2]) {
-                    $delay_time = $schedule[2] * 60;
-                }
-                $current_monthday  = date('j');
-                $schedule_monthday = $schedule[1];
-                $current_hour      = date("H");
-                $schedule_hour     = $schedule[0];
-                
-                if ($current_monthday > $schedule_monthday) {
-                    $time = mktime($schedule_hour, 0, 0, date("m") + 1, $schedule_monthday, date("Y"));
-                } else if ($current_monthday < $schedule_monthday) {
-                    $time = mktime($schedule_hour, 0, 0, date("m"), $schedule_monthday, date("Y"));
-                } else if ($current_monthday == $schedule_monthday) {
-                    if ($current_hour >= $schedule_hour)
-                        $time = mktime($schedule_hour, 0, 0, date("m") + 1, $schedule_monthday, date("Y"));
-                    else
-                        $time = mktime($schedule_hour, 0, 0, date("m"), $schedule_monthday, date("Y"));
-                    break;
-                }
-                
-                break;
-            default:
-                break;
-        }
-        
-        if ($delay_time) {
-            $time += $delay_time;
-        }
-        
-        
-        return $time;
-        
-    }
-//IWP Remove ends here
-*/
-    
     //Parse task arguments for info on IWP Admin Panel
     function get_backup_stats()
     {
@@ -1711,23 +1203,7 @@ function email_backup($args)
         }
         return $stats;
     }
-    
-    /*
-//IWP Remove starts here
-function get_next_schedules()
-    {
-        $stats = array();
-        $tasks = $this->tasks;
-        if (is_array($tasks) && !empty($tasks)) {
-            foreach ($tasks as $task_name => $info) {
-                $stats[$task_name] = isset($info['task_args']['next']) ? $info['task_args']['next'] : array();
-            }
-        }
-        return $stats;
-    }
-//IWP Remove ends here
-*/
-    
+        
     function remove_old_backups($task_name)
     {
         //Check for previous failed backups first
@@ -1750,30 +1226,7 @@ function get_next_schedules()
                 if (isset($backups[$task_name]['task_results'][$i]['server'])) {
                     @unlink($backups[$task_name]['task_results'][$i]['server']['file_path']);
                 }
-                
-                /*
-//IWP Remove starts here
-//Remove from ftp
-                if (isset($backups[$task_name]['task_results'][$i]['ftp'])) {
-                    $ftp_file            = $backups[$task_name]['task_results'][$i]['ftp'];
-                    $args                = $backups[$task_name]['task_args']['account_info']['iwp_ftp'];
-                    $args['backup_file'] = $ftp_file;
-                    $this->remove_ftp_backup($args);
-                }
-                
-                if (isset($backups[$task_name]['task_results'][$i]['amazons3'])) {
-                    $amazons3_file       = $backups[$task_name]['task_results'][$i]['amazons3'];
-                    $args                = $backups[$task_name]['task_args']['account_info']['iwp_amazon_s3'];
-                    $args['backup_file'] = $amazons3_file;
-                    $this->remove_amazons3_backup($args);
-                }
-                
-                if (isset($backups[$task_name]['task_results'][$i]['dropbox'])) {
-                    //To do: dropbox remove
-                }
-//IWP Remove ends here
-*/
-                
+   
                 //Remove database backup info
                 unset($backups[$task_name]['task_results'][$i]);
                 
@@ -1807,30 +1260,7 @@ function get_next_schedules()
         
         if (isset($backup['server'])) {
             @unlink($backup['server']['file_path']);
-        }
-        
-/*
-//IWP Remove starts here
-        //Remove from ftp
-        if (isset($backup['ftp'])) {
-            $ftp_file            = $backup['ftp'];
-            $args                = $tasks[$task_name]['task_args']['account_info']['iwp_ftp'];
-            $args['backup_file'] = $ftp_file;
-            $this->remove_ftp_backup($args);
-        }
-        
-        if (isset($backup['amazons3'])) {
-            $amazons3_file       = $backup['amazons3'];
-            $args                = $tasks[$task_name]['task_args']['account_info']['iwp_amazon_s3'];
-            $args['backup_file'] = $amazons3_file;
-            $this->remove_amazons3_backup($args);
-        }
-        
-        if (isset($backup['dropbox'])) {
-        }
-//IWP Remove ends here
-*/
-        
+        }        
         unset($backups[$result_id]);
         
         if (count($backups)) {
@@ -1910,68 +1340,6 @@ function get_next_schedules()
     
     
 /*
-//IWP Remove starts here
-    function remote_backup_now($args)
-    {
-        if (!empty($args))
-            extract($args);
-        
-        $tasks = $this->tasks;
-        $task  = $tasks['Backup Now'];
-        
-        if (!empty($task)) {
-            extract($task['task_args']);
-        }
-        
-        $results = $task['task_results'];
-        
-        if (is_array($results) && count($results)) {
-            $backup_file = $results[count($results) - 1]['server']['file_path'];
-        }
-        
-        if ($backup_file && file_exists($backup_file)) {
-            //FTP, Amazon S3 or Dropbox
-            if (isset($account_info['iwp_ftp']) && !empty($account_info['iwp_ftp'])) {
-                $account_info['iwp_ftp']['backup_file'] = $backup_file;
-                $return                                 = $this->ftp_backup($account_info['iwp_ftp']);
-            }
-            
-            if (isset($account_info['iwp_amazon_s3']) && !empty($account_info['iwp_amazon_s3'])) {
-                $account_info['iwp_amazon_s3']['backup_file'] = $backup_file;
-                $return                                       = $this->amazons3_backup($account_info['iwp_amazon_s3']);
-            }
-            
-            if (isset($account_info['iwp_dropbox']) && !empty($account_info['iwp_dropbox'])) {
-                $account_info['iwp_dropbox']['backup_file'] = $backup_file;
-                $return                                     = $this->dropbox_backup($account_info['iwp_dropbox']);
-            }
-            
-            if (isset($account_info['iwp_email']) && !empty($account_info['iwp_email'])) {
-                $account_info['iwp_email']['file_path'] = $backup_file;
-                $account_info['iwp_email']['task_name'] = 'Backup Now';
-                $return                                 = $this->email_backup($account_info['iwp_email']);
-            }
-            
-            
-            if ($return == true && $del_host_file) {
-                @unlink($backup_file);
-                unset($tasks['Backup Now']['task_results'][count($results) - 1]['server']);
-                $this->update_tasks($tasks);
-                //update_option('iwp_client_backup_tasks', $tasks);
-            }
-            
-            
-            
-        } else {
-            $return = array(
-                'error' => 'Backup file not found on your server. Please try again.'
-            );
-        }
-        
-        return $return;
-        
-    }
-//IWP Remove ends here
 */
     
     function validate_task($args, $url)
