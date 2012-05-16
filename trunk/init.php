@@ -4,7 +4,7 @@ Plugin Name: InfiniteWP - Client
 Plugin URI: http://infinitewp.com/
 Description: This is the client plugin of InfiniteWP that communicates with the InfiniteWP Admin panel.
 Author: Revmakx
-Version: 1.0.1
+Version: 1.0.2
 Author URI: http://www.revmakx.com
 */
 /************************************************************
@@ -26,7 +26,7 @@ Author URI: http://www.revmakx.com
  **************************************************************/
 
 if(!defined('IWP_MMB_CLIENT_VERSION'))
-	define('IWP_MMB_CLIENT_VERSION', '1.0.1');
+	define('IWP_MMB_CLIENT_VERSION', '1.0.2');
 
 if ( !defined('IWP_MMB_XFRAME_COOKIE')){
 	$siteurl = function_exists('get_site_option') ? get_site_option( 'siteurl' ) : get_option('siteurl');
@@ -62,8 +62,14 @@ if( !function_exists ('iwp_mmb_parse_request')) {
 		
 		global $current_user, $iwp_mmb_core, $new_actions, $wp_db_version, $wpmu_version, $_wp_using_ext_object_cache;
 		$data = base64_decode($HTTP_RAW_POST_DATA);
-		if ($data)
-			$num = @extract(unserialize($data));
+		if ($data){
+			//$num = @extract(unserialize($data));
+			$unserialized_data = unserialize($data);
+			$iwp_action 	= $unserialized_data['iwp_action'];
+			$params 		= $unserialized_data['params'];
+			$id 			= $unserialized_data['id'];
+			$signature 		= $unserialized_data['signature'];
+		}
 		
 		if (isset($iwp_action)) {
 			$action = $iwp_action;
