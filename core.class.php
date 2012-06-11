@@ -559,6 +559,8 @@ class IWP_MMB_Core extends IWP_MMB_Helper
                 )
             ));
             ob_end_clean();
+			@wp_update_plugins();
+			
             if (is_wp_error($result) || !$result) {
                 return array(
                     'error' => 'InfiniteWP Client plugin could not be updated.'
