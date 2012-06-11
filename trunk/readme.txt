@@ -45,6 +45,10 @@ Check out [InfiniteWP.com](http://infinitewp.com/ "Manage Multiple WordPress").
 
 == Changelog == 
 
+= 1.0.3 =
+* WordPress Multisite Backup issue fixed
+* Bugs fixed
+
 = 1.0.2 =
 * Bugs fixed
 

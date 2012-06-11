@@ -542,7 +542,7 @@ class IWP_MMB_Core extends IWP_MMB_Helper
             
             if (!$this->is_server_writable()) {
                 return array(
-                    'error' => 'Failed, please add FTP details for automatic upgrades.'
+                    'error' => 'Failed. please add FTP details for automatic upgrades.'
                 );
             }
             

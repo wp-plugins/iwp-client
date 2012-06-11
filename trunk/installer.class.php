@@ -58,7 +58,13 @@ class IWP_MMB_Installer extends IWP_MMB_Core
             return array(
                 'error' => '<p>No files received. Internal error.</p>'
             );
-        
+			
+		if (!$this->is_server_writable()) {
+			return array(
+			     'error' => 'Failed, please add FTP details' 
+           );  
+      }        
+	
         if (defined('WP_INSTALLING') && file_exists(ABSPATH . '.maintenance'))
             return array(
                 'error' => '<p>Site under maintanace.</p>'
@@ -128,12 +134,12 @@ class IWP_MMB_Installer extends IWP_MMB_Core
     {
 		if ($params == null || empty($params))
             return array(
-                'failed' => 'No upgrades passed.'
+                'error' => 'No upgrades passed.'
             );
         
         if (!$this->is_server_writable()) {
             return array(
-                'error' => 'Failed, please add FTP details'
+                'error' => 'Failed. please add FTP details.'
             );
         }
         
@@ -543,7 +549,7 @@ class IWP_MMB_Installer extends IWP_MMB_Core
         }
     }
     
-    function get_upgradable_plugins()
+    function get_upgradable_plugins( $filter = array() )
     {
         $current            = $this->iwp_mmb_get_transient('update_plugins');
 		
@@ -556,6 +562,9 @@ class IWP_MMB_Installer extends IWP_MMB_Core
                     continue;
                 
                 $data = get_plugin_data(WP_PLUGIN_DIR . '/' . $plugin_path);               
+				if(isset($data['Name']) && in_array($data['Name'], $filter))
+					continue;
+				
                 if (strlen($data['Name']) > 0 && strlen($data['Version']) > 0) {
                     $current->response[$plugin_path]->name        = $data['Name'];
                     $current->response[$plugin_path]->old_version = $data['Version'];
@@ -569,7 +578,7 @@ class IWP_MMB_Installer extends IWP_MMB_Core
             return array();
     }
     
-    function get_upgradable_themes()
+    function get_upgradable_themes( $filter = array() )
     {
         $all_themes     = get_themes();
         $upgrade_themes = array();
@@ -578,6 +587,9 @@ class IWP_MMB_Installer extends IWP_MMB_Core
         if (!empty($current->response)) {
 			foreach ((array) $all_themes as $theme_template => $theme_data) {
 				if(isset($theme_data['Parent Theme']) && !empty($theme_data['Parent Theme']))
+					continue;
+					
+				if(isset($theme_data['Name']) && in_array($theme_data['Name'], $filter))
 					continue;
 					
 				foreach ($current->response as $current_themes => $theme) {
@@ -640,16 +652,30 @@ class IWP_MMB_Installer extends IWP_MMB_Core
                 if ($plugin['Name'] != 'InfiniteWP - Client') {
                     if (in_array($path, $activated_plugins)) {
                         $plugins['active'][$br_a]['path'] = $path;
-                        $plugins['active'][$br_a]['name'] = $plugin['Name'];
+                        $plugins['active'][$br_a]['name'] = strip_tags($plugin['Name']);
                         $br_a++;
                     }
                     
                     if (!in_array($path, $activated_plugins)) {
                         $plugins['inactive'][$br_i]['path'] = $path;
-                        $plugins['inactive'][$br_i]['name'] = $plugin['Name'];
+                        $plugins['inactive'][$br_i]['name'] = strip_tags($plugin['Name']);
                         $br_i++;
                     }
                     
+                }
+                
+                if ($search) {
+                    foreach ($plugins['active'] as $k => $plugin) {
+                        if (!stristr($plugin['name'], $search)) {
+                            unset($plugins['active'][$k]);
+                        }
+                    }
+                    
+                    foreach ($plugins['inactive'] as $k => $plugin) {
+                        if (!stristr($plugin['name'], $search)) {
+                            unset($plugins['inactive'][$k]);
+                        }
+                    }
                 }
             }
         }
@@ -681,14 +707,14 @@ class IWP_MMB_Installer extends IWP_MMB_Core
             foreach ($all_themes as $theme_name => $theme) {
                 if ($current_theme == $theme_name) {
                     $themes['active'][$br_a]['path']       = $theme['Template'];
-                    $themes['active'][$br_a]['name']       = $theme['Name'];
+                    $themes['active'][$br_a]['name']       = strip_tags($theme['Name']);
                     $themes['active'][$br_a]['stylesheet'] = $theme['Stylesheet'];
                     $br_a++;
                 }
                 
                 if ($current_theme != $theme_name) {
                     $themes['inactive'][$br_i]['path']       = $theme['Template'];
-                    $themes['inactive'][$br_i]['name']       = $theme['Name'];
+                    $themes['inactive'][$br_i]['name']       = strip_tags($theme['Name']);
                     $themes['inactive'][$br_i]['stylesheet'] = $theme['Stylesheet'];
                     $br_i++;
                 }

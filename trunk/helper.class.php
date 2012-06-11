@@ -353,7 +353,7 @@ class IWP_MMB_Helper
         $pl_key = $this->get_admin_panel_public_key();
         if (!$pl_key) {
             return array(
-                'error' => 'Authentication failed. Deactivate and activate the InfiniteWP Client plugin on this site, then remove the website from your InfiniteWP account and add it again.'
+                'error' => 'Authentication failed. Deactivate and activate the InfiniteWP Client plugin on this site, then remove the website from your InfiniteWP Admin Panel and add it again.'
             );
         }
         
@@ -364,7 +364,7 @@ class IWP_MMB_Helper
                 return true;
             } else if ($verify == 0) {
                 return array(
-                    'error' => 'Invalid message signature. Deactivate and activate the InfiniteWP Client plugin on this site, then remove the website from your InfiniteWP account and add it again.'
+                    'error' => 'Invalid message signature. Deactivate and activate the InfiniteWP Client plugin on this site, then remove the website from your InfiniteWP Admin Panel and add it again.'
                 );
             } else {
                 return array(
@@ -378,13 +378,13 @@ class IWP_MMB_Helper
 				return true;
             }
             return array(
-                'error' => 'Invalid message signature. Deactivate and activate the InfiniteWP Client plugin on this site, then remove the website from your InfiniteWP account and add it again.'
+                'error' => 'Invalid message signature. Deactivate and activate the InfiniteWP Client plugin on this site, then remove the website from your InfiniteWP Admin Panel and add it again.'
             );
         }
         // no rand key - deleted in get_stat maybe
         else
             return array(
-                'error' => 'Invalid message signature. Deactivate and activate the InfiniteWP Client plugin on this site, then remove the website from your InfiniteWP account and add it again.'
+                'error' => 'Invalid message signature. Deactivate and activate the InfiniteWP Client plugin on this site, then remove the website from your InfiniteWP Admin Panel and add it again.'
             );
     }
     
@@ -499,7 +499,7 @@ class IWP_MMB_Helper
 	 }
 	 
 	 
-		
+    
 		
     
 }

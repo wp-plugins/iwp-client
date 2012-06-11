@@ -4,7 +4,7 @@ Plugin Name: InfiniteWP - Client
 Plugin URI: http://infinitewp.com/
 Description: This is the client plugin of InfiniteWP that communicates with the InfiniteWP Admin panel.
 Author: Revmakx
-Version: 1.0.2
+Version: 1.0.3
 Author URI: http://www.revmakx.com
 */
 /************************************************************
@@ -26,7 +26,7 @@ Author URI: http://www.revmakx.com
  **************************************************************/
 
 if(!defined('IWP_MMB_CLIENT_VERSION'))
-	define('IWP_MMB_CLIENT_VERSION', '1.0.2');
+	define('IWP_MMB_CLIENT_VERSION', '1.0.3');
 
 if ( !defined('IWP_MMB_XFRAME_COOKIE')){
 	$siteurl = function_exists('get_site_option') ? get_site_option( 'siteurl' ) : get_option('siteurl');
@@ -51,6 +51,26 @@ require_once("$iwp_mmb_plugin_dir/plugins/search/search.php");
 require_once("$iwp_mmb_plugin_dir/plugins/cleanup/cleanup.php");
 
 
+if( !function_exists ( 'iwp_mmb_filter_params' )) {
+	function iwp_mmb_filter_params( $array = array() ){
+		
+		$filter = array( 'current_user', 'wpdb' );
+		$return = array();
+		foreach ($array as $key => $val) { 
+			if( !is_int($key) && in_array($key, $filter) )
+				continue;
+				
+			if( is_array( $val ) ) { 
+				$return[$key] = iwp_mmb_filter_params( $val );
+			} else {
+				$return[$key] = $val;
+			}
+		} 
+		
+		return $return;
+	}
+}
+
 if( !function_exists ('iwp_mmb_parse_request')) {
 	function iwp_mmb_parse_request()
 	{
@@ -65,6 +85,10 @@ if( !function_exists ('iwp_mmb_parse_request')) {
 		if ($data){
 			//$num = @extract(unserialize($data));
 			$unserialized_data = unserialize($data);
+			if(isset($unserialized_data['params'])){ 
+				$unserialized_data['params'] = iwp_mmb_filter_params($unserialized_data['params']);
+			}
+			
 			$iwp_action 	= $unserialized_data['iwp_action'];
 			$params 		= $unserialized_data['params'];
 			$id 			= $unserialized_data['id'];
@@ -339,7 +363,11 @@ if( !function_exists ( 'iwp_mmb_get_backup_req' )) {
 		$iwp_mmb_core->get_stats_instance();
 		$return = $iwp_mmb_core->stats_instance->get_backup_req($params);
 		
+		if (is_array($return) && array_key_exists('error', $return))
+			iwp_mmb_response($return['error'], false);
+		else {
 		iwp_mmb_response($return, true);
+		}
 	}
 }
 
@@ -390,6 +418,9 @@ if( !function_exists ( 'iwp_mmb_restore_now' )) {
 		
 	}
 }
+
+
+
 
 if( !function_exists ( 'iwp_mmb_clean_orphan_backups' )) {
 	function iwp_mmb_clean_orphan_backups()
@@ -524,20 +555,31 @@ if( !function_exists ( 'iwp_mmb_set_alerts' )) {
 			$iwp_mmb_core->get_stats_instance();
 			$return = $iwp_mmb_core->stats_instance->set_alerts($params);
 			iwp_mmb_response(true, true);
-	}
-		
+	}		
 }
 
 if(!function_exists('iwp_mmb_more_reccurences')){
 	//Backup Tasks
 	add_filter('cron_schedules', 'iwp_mmb_more_reccurences');
 	function iwp_mmb_more_reccurences($schedules) {
-		
+		$schedules['halfminute'] = array('interval' => 30, 'display' => 'Once in a half minute');
 		$schedules['minutely'] = array('interval' => 60, 'display' => 'Once in a minute');
 		$schedules['fiveminutes'] = array('interval' => 300, 'display' => 'Once every five minutes');
 		$schedules['tenminutes'] = array('interval' => 600, 'display' => 'Once every ten minutes');
 		
 		return $schedules;
+	}
+}
+	
+	add_action('iwp_client_backup_tasks', 'iwp_client_check_backup_tasks');
+
+if( !function_exists('iwp_client_check_backup_tasks') ){
+ 	function iwp_client_check_backup_tasks() {
+		global $iwp_mmb_core, $_wp_using_ext_object_cache;
+		$_wp_using_ext_object_cache = false;
+		
+		$iwp_mmb_core->get_backup_instance();
+		$iwp_mmb_core->backup_instance->check_backup_tasks();
 	}
 }
 	

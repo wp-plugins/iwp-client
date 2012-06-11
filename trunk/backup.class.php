@@ -73,9 +73,11 @@ class IWP_MMB_Backup extends IWP_MMB_Core
         parent::__construct();
         $this->site_name = str_replace(array(
             "_",
-            "/"
+            "/",
+	    			"~"
         ), array(
             "",
+            "-",
             "-"
         ), rtrim($this->remove_http(get_bloginfo('url')), "/"));
         $this->statuses  = array(
@@ -100,6 +102,12 @@ class IWP_MMB_Backup extends IWP_MMB_Core
     {
         //$params => [$task_name, $args, $error]
         if (!empty($params)) {
+        	
+        	//Make sure backup cron job is set
+        if (!wp_next_scheduled('iwp_client_backup_tasks')) {
+					wp_schedule_event( time(), 'tenminutes', 'iwp_client_backup_tasks' );
+				}
+        	
             extract($params);
             
             //$before = $this->get_backup_settings();
@@ -119,7 +127,7 @@ class IWP_MMB_Backup extends IWP_MMB_Core
             }
             
             //Update with error
-            if ($error) {
+            if (isset($error)) {
                 if (is_array($error)) {
                     $before[$task_name]['task_results'][count($before[$task_name]['task_results']) - 1]['error'] = $error['error'];
                 } else {
@@ -149,12 +157,18 @@ class IWP_MMB_Backup extends IWP_MMB_Core
             }
             return $return;
         }
+        
+        
+				
         return false;
     }
     
     //Cron check
     function check_backup_tasks()
     {
+    	
+    		$this->check_cron_remove();
+        
         $settings = $this->tasks;
         if (is_array($settings) && !empty($settings)) {
             foreach ($settings as $task_name => $setting) {
@@ -228,7 +242,7 @@ class IWP_MMB_Backup extends IWP_MMB_Core
         
         //Try increase memory limit	and execution time
         @ini_set('memory_limit', '256M');
-        @set_time_limit(600); //ten minutes
+        @set_time_limit(1200); //20 mins
         
         //Remove old backup(s)
         $this->remove_old_backups($task_name);
@@ -348,7 +362,7 @@ class IWP_MMB_Backup extends IWP_MMB_Core
             }
              
             $temp          = $backup_settings[$task_name]['task_results'];
-            $temp          = array_values($temp);
+            $temp          = @array_values($temp);
             $paths['time'] = time();
 			
         
@@ -446,20 +460,35 @@ class IWP_MMB_Backup extends IWP_MMB_Core
         //Exclude paths
         $exclude_data = "-x";
         
+        $exclude_file_data = '';
+        
         if (!empty($exclude)) {
             foreach ($exclude as $data) {
                 if (is_dir(ABSPATH . $data)) {
                     if ($sys == 'WIN')
                         $exclude_data .= " $data/*.*";
                     else
-                        $exclude_data .= " '$data/*'";
+                        $exclude_data .= " $data/*";
+                        
+                        
                 } else {
-                    if ($sys == 'WIN')
+                    if ($sys == 'WIN'){
+                    	if(file_exists(ABSPATH . $data)){
                         $exclude_data .= " $data";
-                    else
+                        	$exclude_file_data .= " $data";
+                        }
+                      } else {
+                    			if(file_exists(ABSPATH . $data)){
                         $exclude_data .= " '$data'";
+                        		$exclude_file_data .= " '$data'";
                 }
             }
+        }
+            }
+        }
+        
+        if($exclude_file_data){
+        	$exclude_file_data = "-x".$exclude_file_data;
         }
         
         foreach ($remove as $data) {
@@ -584,7 +613,6 @@ class IWP_MMB_Backup extends IWP_MMB_Core
                     'error' => 'Failed to zip files. pclZip error (' . $archive->error_code . '): .' . $archive->error_string
                 );
             }
-            
         }
         
         //Reconnect
@@ -698,7 +726,7 @@ class IWP_MMB_Backup extends IWP_MMB_Core
         
         extract($args);
         @ini_set('memory_limit', '256M');
-        @set_time_limit(600);
+        @set_time_limit(1200);
         
         $unlink_file = true; //Delete file after restore
         
@@ -723,6 +751,8 @@ class IWP_MMB_Backup extends IWP_MMB_Core
             
             $what = $tasks[$task_name]['task_args']['what'];
         }
+        
+        $this->wpdb_reconnect();
         
         if ($backup_file && file_exists($backup_file)) {
             if ($overwrite) {
@@ -803,6 +833,8 @@ class IWP_MMB_Backup extends IWP_MMB_Core
                 'error' => 'Error restoring. Cannot find backup file.'
             );
         }
+        
+        $this->wpdb_reconnect();
         
         //Replace options and content urls
         if ($overwrite) {
@@ -1403,11 +1435,13 @@ class IWP_MMB_Backup extends IWP_MMB_Core
     
     function wpdb_reconnect(){
     	global $wpdb;
+		$old_wpdb = $wpdb;
     	//Reconnect to avoid timeout problem after ZIP files
       	if(class_exists('wpdb') && function_exists('wp_set_wpdb_vars')){
       		@mysql_close($wpdb->dbh);
         	$wpdb = new wpdb( DB_USER, DB_PASSWORD, DB_NAME, DB_HOST );
         	wp_set_wpdb_vars(); 
+			$wpdb->options = $old_wpdb->options;//fix for multi site full backup
       	}
     }
     
@@ -1424,6 +1458,64 @@ class IWP_MMB_Backup extends IWP_MMB_Core
     }
 	}
     
+	function check_cron_remove(){
+		if(empty($this->tasks) || (count($this->tasks) == 1 && isset($this->tasks['Backup Now'])) ){
+			wp_clear_scheduled_hook('iwp_client_backup_tasks');
+			exit;
+		}
+	}
+
+    
+	public static function readd_tasks( $params = array() ){
+		global $iwp_mmb_core;
+		
+		if( empty($params) || !isset($params['backups']) )
+			return $params;
+		
+		$before = array();
+		$tasks = $params['backups'];
+		if( !empty($tasks) ){
+			$iwp_mmb_backup = new IWP_MMB_Backup();
+			
+			if( function_exists( 'wp_next_scheduled' ) ){
+				if ( !wp_next_scheduled('iwp_client_backup_tasks') ) {
+					wp_schedule_event( time(), 'tenminutes', 'iwp_client_backup_tasks' );
+				}
+			}
+			
+			foreach( $tasks as $task ){
+				$before[$task['task_name']] = array();
+				
+				if(isset($task['secure'])){
+					if($decrypted = $iwp_mmb_core->_secure_data($task['secure'])){
+						$decrypted = maybe_unserialize($decrypted);
+						if(is_array($decrypted)){
+							foreach($decrypted as $key => $val){
+								if(!is_numeric($key))
+									$task[$key] = $val;							
+							}
+							unset($task['secure']);
+						} else 
+							$task['secure'] = $decrypted;
+					}
+					
+				}
+				if (isset($task['account_info']) && is_array($task['account_info'])) { //only if sends from master first time(secure data)
+					$task['args']['account_info'] = $task['account_info'];
+				}
+				
+				$before[$task['task_name']]['task_args'] = $task['args'];
+				$before[$task['task_name']]['task_args']['next'] = $iwp_mmb_backup->schedule_next($task['args']['type'], $task['args']['schedule']);
+			}
+		}
+		update_option('iwp_client_backup_tasks', $before);
+		
+		unset($params['backups']);
+		return $params;
+	}
 }
 
+if( function_exists('add_filter') ){
+	add_filter( 'iwp_website_add', 'IWP_MMB_Backup::readd_tasks' );
+}
 ?>
