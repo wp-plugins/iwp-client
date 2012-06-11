@@ -21,6 +21,9 @@ add_filter('iwp_mmb_stats_filter', 'iwp_mmb_get_extended_info');
 
 function iwp_mmb_get_extended_info($stats)
 {
+	global $iwp_mmb_core;
+	$params = get_option('iwp_mmb_stats_filter');
+	$filter = isset($params['plugins']['cleanup']) ? $params['plugins']['cleanup'] : array();
     $stats['num_revisions']     = iwp_mmb_num_revisions();
     //$stats['num_revisions'] = 5;
     $stats['overhead']          = iwp_mmb_handle_overhead(false);
@@ -35,13 +38,16 @@ iwp_mmb_add_action('cleanup_delete', 'iwp_mmb_cleanup_delete_client');
 function iwp_mmb_cleanup_delete_client($params = array())
 {
     global $iwp_mmb_core;
+    $revision_params = get_option('iwp_mmb_stats_filter');
+	$revision_filter = isset($revision_params['plugins']['cleanup']) ? $revision_params['plugins']['cleanup'] : array();
     
     $params_array = explode('_', $params['actions']);
     $return_array = array();
+	
     foreach ($params_array as $param) {
         switch ($param) {
             case 'revision':
-                if (iwp_mmb_delete_all_revisions()) {
+                if (iwp_mmb_delete_all_revisions($revision_filter['revisions'])) {
                     $return_array['revision'] = 'OK';
                 } else {
                     $return_array['revision_error'] = 'Failed, please try again';

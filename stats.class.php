@@ -513,6 +513,7 @@ class IWP_MMB_Stats extends IWP_MMB_Core
     
     function set_hit_count($fix_count = false)
     {
+    	global $iwp_mmb_core;
         if ($fix_count || (!is_admin() && !IWP_MMB_Stats::is_bot())) {
             $date           = date('Y-m-d');
             $iwp_client_user_hit_count = (array) get_option('iwp_client_user_hit_count');
@@ -766,5 +767,20 @@ class IWP_MMB_Stats extends IWP_MMB_Core
     	update_option('iwp_client_pageview_alerts',array('site_id' => $site_id,'alert' => $alert,'url' => $url));
     }
     
+	public static function readd_alerts( $params = array() ){
+		if( empty($params) || !isset($params['alerts']))
+			return $params;
+			
+		if( !empty($params['alerts']) ){
+			update_option('iwp_client_pageview_alerts', $params['alerts']);
+			unset($params['alerts']);
+		}
+		
+		return $params;
+	}
+ }
+    
+if( function_exists('add_filter') ){ 
+	add_filter( 'iwp_website_add', 'IWP_MMB_Stats::readd_alerts' );
 }
 ?>
