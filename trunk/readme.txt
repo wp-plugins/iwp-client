@@ -22,11 +22,14 @@ Main features:
 *   Bulk Install plugins & themes in multiple sites at once
 *   and more..
 
+Visit us at [InfiniteWP.com](http://infinitewp.com/ "Manage Multiple WordPress").
+
 Check out the [InfiniteWP Overview Video](http://www.youtube.com/watch?v=IOu7LdyPOSs) below.
 
 http://www.youtube.com/watch?v=IOu7LdyPOSs
 
-Check out [InfiniteWP.com](http://infinitewp.com/ "Manage Multiple WordPress").
+Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin on which the client plugin is being developed.
+
 
 == Installation ==
 
