@@ -35,6 +35,9 @@ class IWP_MMB_Core extends IWP_MMB_Helper
     var $installer_instance;
     var $iwp_mmb_multisite;
     var $network_admin_install;
+	
+	var $backup_repository_instance;
+	
     private $action_call;
     private $action_params;
     private $iwp_mmb_pre_init_actions;
@@ -122,6 +125,7 @@ class IWP_MMB_Core extends IWP_MMB_Helper
 			'check_backup_compat' => 'iwp_mmb_check_backup_compat',
 			'scheduled_backup' => 'iwp_mmb_scheduled_backup',
 			'run_task' => 'iwp_mmb_run_task_now',
+			'delete_schedule_task' => 'iwp_mmb_delete_task_now',
 			'execute_php_code' => 'iwp_mmb_execute_php_code',
 			'delete_backup' => 'mmm_delete_backup',
 			'remote_backup_now' => 'iwp_mmb_remote_backup_now',
@@ -133,7 +137,9 @@ class IWP_MMB_Core extends IWP_MMB_Helper
 			'edit_plugins_themes' => 'iwp_mmb_edit_plugins_themes',
 			'client_brand' => 'iwp_mmb_client_brand',
 			'set_alerts' => 'iwp_mmb_set_alerts',
-			'maintenance' => 'iwp_mmb_maintenance_mode'
+			'maintenance' => 'iwp_mmb_maintenance_mode',
+			
+			'backup_repository' => 'iwp_mmb_backup_repository'
 		);
 		
 		add_action('rightnow_end', array( &$this, 'add_right_now_info' ));       
@@ -377,6 +383,15 @@ class IWP_MMB_Core extends IWP_MMB_Helper
         }
         
         return $this->backup_instance;
+    }
+    
+	function get_backup_repository_instance()
+    {
+        if (!isset($this->backup_repository_instance)) {
+            $this->backup_repository_instance = new IWP_MMB_Backup_Repository();
+        }
+        
+        return $this->backup_repository_instance;
     }
     
     /**
