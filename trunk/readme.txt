@@ -48,6 +48,11 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog == 
 
+= 1.0.4 =
+* Premium addons compatibility
+* Clearing cache and sending WP data
+* Bugs fixed
+
 = 1.0.3 =
 * WordPress Multisite Backup issue fixed
 * Bugs fixed
