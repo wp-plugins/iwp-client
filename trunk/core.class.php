@@ -233,10 +233,10 @@ class IWP_MMB_Core extends IWP_MMB_Helper
 		}
 		else{
 			echo '<tr><td align="center">Please deactivate and then activate InfiniteWP Client plugin.</td></tr>';
-		}
+		}		
 		
 		echo '</table>
-	  	</p></div>';
+	  	</p></div>';		
 		
     }
     
