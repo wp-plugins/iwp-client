@@ -48,6 +48,10 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog == 
 
+= 1.1.1 =
+* Improved backups
+* Bug fixes
+
 = 1.1.0 =
 * Premium addons bugs fixed
 * Reload data improved
