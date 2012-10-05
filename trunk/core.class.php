@@ -461,7 +461,7 @@ class IWP_MMB_Core extends IWP_MMB_Helper
             delete_option('iwp_client_action_message_id');
         }
         
-        delete_option('iwp_client_backup_tasks');
+        //delete_option('iwp_client_backup_tasks');
         delete_option('iwp_client_notifications');
         delete_option('iwp_client_brand');
         delete_option('iwp_client_pageview_alerts');
@@ -523,7 +523,7 @@ class IWP_MMB_Core extends IWP_MMB_Helper
         
         //Delete options
 		delete_option('iwp_client_maintenace_mode');
-        delete_option('iwp_client_backup_tasks');
+        //delete_option('iwp_client_backup_tasks');
         wp_clear_scheduled_hook('iwp_client_backup_tasks');
         delete_option('iwp_client_notifications');
         wp_clear_scheduled_hook('iwp_client_notifications');        

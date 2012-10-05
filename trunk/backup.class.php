@@ -108,7 +108,8 @@ class IWP_MMB_Backup extends IWP_MMB_Core
       }
       
       if ( (int) @ini_get('max_execution_time') < 1200 ) {
-     	  @set_time_limit(1200); //twenty minutes
+     	  	@ini_set('max_execution_time', 1200);//twenty minutes
+			@set_time_limit(1200); 
      		$changed['execution_time'] = 1;
      	}
      	
@@ -259,11 +260,11 @@ if (is_array($params['account_info'])) { //only if sends from IWP Admin Panel fi
         }
         
     }
-    
+     
   
 function task_now($task_name){
 
-    	 $settings = $this->tasks;
+	 $settings = $this->tasks;
     	 if(!array_key_exists($task_name,$settings)){
     	 	return array('error' => $task_name." does not exist.");
     	 } else {
@@ -856,7 +857,7 @@ if (isset($account_info['iwp_ftp']) && !empty($account_info['iwp_ftp'])) {
         global $wpdb;
         $paths   = $this->check_mysql_paths();
         $brace   = (substr(PHP_OS, 0, 3) == 'WIN') ? '"' : '';
-        $command = $brace . $paths['mysqldump'] . $brace . ' --host="' . DB_HOST . '" --user="' . DB_USER . '" --password="' . DB_PASSWORD . '" --add-drop-table --skip-lock-tables "' . DB_NAME . '" > ' . $brace . $file . $brace;
+        $command = $brace . $paths['mysqldump'] . $brace . ' --force --host="' . DB_HOST . '" --user="' . DB_USER . '" --password="' . DB_PASSWORD . '" --add-drop-table --skip-lock-tables "' . DB_NAME . '" > ' . $brace . $file . $brace;
         ob_start();
         $result = $this->iwp_mmb_exec($command);
         ob_get_clean();
@@ -1286,7 +1287,7 @@ elseif (isset($task['task_results'][$result_id]['ftp'])) {
         }
         
         $brace     = (substr(PHP_OS, 0, 3) == 'WIN') ? '"' : '';
-        $command   = $brace . $paths['mysql'] . $brace . ' --host="' . DB_HOST . '" --user="' . DB_USER . '" --password="' . DB_PASSWORD . '" ' . DB_NAME . ' < ' . $brace . $file_name . $brace;
+        $command   = $brace . $paths['mysql'] . $brace . ' --host="' . DB_HOST . '" --user="' . DB_USER . '" --password="' . DB_PASSWORD . '" --default-character-set="utf8" ' . DB_NAME . ' < ' . $brace . $file_name . $brace;
         
         ob_start();
         $result = $this->iwp_mmb_exec($command);
