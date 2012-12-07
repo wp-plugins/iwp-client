@@ -731,7 +731,7 @@ if (isset($account_info['iwp_ftp']) && !empty($account_info['iwp_ftp'])) {
         $command  = "$zip -q -j $comp_level $backup_file .* * $exclude_file_data";
         $result_f = $this->iwp_mmb_exec($command, false, true);
         if (!$result_f || $result_f == 18) { // disregard permissions error, file can't be accessed
-            $command  = "$zip -q -r $comp_level $backup_file $include_data $exclude_file_data";
+            $command  = "$zip -q -r $comp_level $backup_file $include_data $exclude_data";
             $result_d = $this->iwp_mmb_exec($command, false, true);            
             if ($result_d && $result_d != 18) {
                 @unlink($backup_file);
