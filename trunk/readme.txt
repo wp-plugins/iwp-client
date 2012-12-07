@@ -48,6 +48,9 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog ==
 
+= 1.1.4 =
+* Bug in command line backup fixed
+
 = 1.1.3 =
 * Backup improved and optimize table while backing up fixed
 * Excluding wp-content/cache & wp-content/w3tc/ by default
