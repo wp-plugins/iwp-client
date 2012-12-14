@@ -48,6 +48,9 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog ==
 
+= 1.1.6 =
+* Multisite updates issue fixed
+
 = 1.1.5 =
 * WP 3.5 compatibility
 * Backup system improved
