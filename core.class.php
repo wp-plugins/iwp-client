@@ -227,7 +227,7 @@ class IWP_MMB_Core extends IWP_MMB_Helper
 		echo '<div class="updated" style="text-align: center;"><p style="color: green; font-size: 14px; font-weight: bold;">Add this site to IWP Admin panel</p><p>
 		<table border="0" align="center">';
 		if(!empty($iwp_client_activate_key)){
-			echo '<tr><td align="right">WP-ADMIN URL:</td><td align="left"><strong>'.admin_url().'/</strong></td></tr>
+			echo '<tr><td align="right">WP-ADMIN URL:</td><td align="left"><strong>'.admin_url().'</strong></td></tr>
 			<tr><td align="right">ADMIN USERNAME:</td><td align="left"><strong>'.$username.'</strong> (or any admin id)</td></tr>
 			<tr><td align="right">ACTIVATION KEY:</td><td align="left"><strong>'.$iwp_client_activate_key.'</strong></td></tr>';
 		}
