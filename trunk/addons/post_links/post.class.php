@@ -75,7 +75,6 @@ class IWP_MMB_Post extends IWP_MMB_Core
         $iwp_mmb_dot_url     = str_replace($rep, $with, $iwp_mmb_dot_url);
         $dot_match_count = preg_match_all('/(<a[^>]+href=\"([^"]+)\"[^>]*>)?(<\s*img.[^\/>]*src="([^"]*' . $iwp_mmb_dot_url . '[^\s]+\.(jpg|jpeg|png|gif|bmp))"[^>]*>)/ixu', $post_data['post_content'], $dot_get_urls, PREG_SET_ORDER);
 		
-		file_put_contents("C:\wamp\www\_teste.php", var_export($iwp_base_url, true).'--iwp_mmb_base_url---'.var_export($post_data['post_content'], true).'--iwp_mmb_base_url---'.var_export($dot_match_count, true).'--iwp_mmb_dot_url---'.var_export($iwp_mmb_dot_url, true).'--iwp_mmb_base_url---'.var_export($iwp_mmb_base_url, true).'--iwp_mmb_base_url---'.var_export($dot_get_urls, true));
 				
         if ($dot_match_count > 0) {
             foreach ($dot_get_urls as $dot_url) {

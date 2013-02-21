@@ -48,6 +48,9 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog ==
 
+= 1.1.8 =
+* Minor fixes
+
 = 1.1.7 =
 * Old backups retained when a site is restored
 * Compatible with Better WP Security
