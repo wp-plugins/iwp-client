@@ -63,7 +63,7 @@ class Dropbox {
         $uploadid=null;
         $offset=0;
         $ProgressFunction=null;
-        while ($data=fread($file_handle,4194304)) {  //4194304 = 4MB
+        while ($data=fread($file_handle, (1024*1024*30))) {  //1024*1024*30 = 30MB
 			iwp_mmb_auto_print('dropbox_chucked_upload');
             $chunkHandle = fopen('php://memory', 'rw');
             fwrite($chunkHandle,$data);
