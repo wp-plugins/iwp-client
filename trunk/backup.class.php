@@ -985,7 +985,12 @@ function delete_task_now($task_name){
                 return array(
                     'error' => 'Error creating database backup folder (' . $db_folder . '). Make sure you have corrrect write permissions.'
                 );
-			 @file_put_contents(IWP_BACKUP_DIR.'/iwp_db/index.php', '');
+			$db_index_file = '<?php
+			global $old_url, $old_file_path;
+			$old_url = \''.get_option('siteurl').'\';
+			$old_file_path = \''.ABSPATH.'\';
+			';
+			@file_put_contents(IWP_BACKUP_DIR.'/iwp_db/index.php', $db_index_file);
         }
         
         $file   = $db_folder . DB_NAME . '.sql';
@@ -1484,6 +1489,9 @@ function delete_task_now($task_name){
         
 		$this->wpdb_reconnect();
 		global $wpdb;
+		
+		$wpdb->query("SET NAMES 'utf8'");
+		
         $current_query = '';
         // Read in entire file
         $lines         = file($file_name);

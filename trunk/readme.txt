@@ -48,6 +48,12 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog ==
 
+= 1.1.10 =
+* Charset issue fixed for restore / clone
+* Dropbox improved
+* Cloning URL and folder path fixed
+
+
 = 1.1.9 =
 * Better error reporting
 * Improved connection reliability
