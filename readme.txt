@@ -2,7 +2,7 @@
 Contributors: infinitewp
 Tags: admin, administration, amazon, api, authentication, automatic, dashboard, dropbox, events, integration, manage, multisite, multiple, notification, performance, s3, security, seo, stats, tracking, infinitewp, updates, backup, restore, iwp, infinite
 Requires at least: 3.0
-Tested up to: 3.5.1
+Tested up to: 3.6
 Stable tag: trunk
 
 Install this plugin on unlimited sites and manage them all from a central dashboard.
@@ -47,6 +47,12 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 5. One-click updates
 
 == Changelog ==
+
+= 1.2.0 =
+* Improvement: Backup fail safe option now uses only php db dump and pclZip
+* Improvement: Better feedback regarding completion of backups even in case of error
+* Improvement: Restore using file system (better handling of file permissions)
+* Fix: Notice issue with unserialise
 
 = 1.1.10 =
 * Charset issue fixed for restore / clone
