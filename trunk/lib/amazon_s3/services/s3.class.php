@@ -3686,10 +3686,10 @@ class AmazonS3 extends CFRuntime
 			{
 				$opt['partSize'] = 5242880; // 5 MB
 			}
-			// If more than 500 MB...
-			elseif ((integer) $opt['partSize'] > 524288000)
+			// If more than 50 MB...
+			elseif ((integer) $opt['partSize'] > 52428800)
 			{
-				$opt['partSize'] = 524288000; // 500 MB
+				$opt['partSize'] = 52428800; // 50 MB
 			}
 		}
 		else
@@ -3737,6 +3737,7 @@ class AmazonS3 extends CFRuntime
 		$batch = new CFBatchRequest(isset($opt['limit']) ? (integer) $opt['limit'] : null);
 		foreach ($pieces as $i => $piece)
 		{
+			iwp_mmb_auto_print('amazonS3_chucked_upload');
 			$this->batch($batch)->upload_part($bucket, $filename, $upload_id, array(
 				'expect' => '100-continue',
 				'fileUpload' => $opt['fileUpload'],
@@ -3745,6 +3746,7 @@ class AmazonS3 extends CFRuntime
 				'length' => (integer) $piece['length'],
 			));
 		}
+		iwp_mmb_auto_print('amazonS3_chucked_upload');
 
 		// Send batch requests
 		$batch_responses = $this->batch($batch)->send();

@@ -4,7 +4,7 @@ Plugin Name: InfiniteWP - Client
 Plugin URI: http://infinitewp.com/
 Description: This is the client plugin of InfiniteWP that communicates with the InfiniteWP Admin panel.
 Author: Revmakx
-Version: 1.1.10
+Version: 1.2.0
 Author URI: http://www.revmakx.com
 */
 /************************************************************
@@ -26,7 +26,7 @@ Author URI: http://www.revmakx.com
  **************************************************************/
 
 if(!defined('IWP_MMB_CLIENT_VERSION'))
-	define('IWP_MMB_CLIENT_VERSION', '1.1.10');
+	define('IWP_MMB_CLIENT_VERSION', '1.2.0');
 
 
 if ( !defined('IWP_MMB_XFRAME_COOKIE')){
@@ -83,9 +83,6 @@ if( !function_exists ( 'iwp_mmb_filter_params' )) {
 	}
 }
 
-
-
-
 if( !function_exists ('iwp_mmb_parse_request')) {
 	function iwp_mmb_parse_request()
 	{
@@ -99,7 +96,7 @@ if( !function_exists ('iwp_mmb_parse_request')) {
 		$data = base64_decode($HTTP_RAW_POST_DATA);
 		if ($data){
 			//$num = @extract(unserialize($data));
-			$unserialized_data = unserialize($data);
+			$unserialized_data = @unserialize($data);
 			if(isset($unserialized_data['params'])){ 
 				$unserialized_data['params'] = iwp_mmb_filter_params($unserialized_data['params']);
 			}
@@ -133,6 +130,7 @@ if( !function_exists ('iwp_mmb_parse_request')) {
 
 			$auth = $iwp_mmb_core->authenticate_message($action . $id, $signature, $id);
 			if ($auth === true) {
+				$GLOBALS['IWP_CLIENT_HISTORY_ID'] = $id;
 				
 				if(isset($params['username']) && !is_user_logged_in()){
 					$user = function_exists('get_user_by') ? get_user_by('login', $params['username']) : get_userdatabylogin( $params['username'] );
