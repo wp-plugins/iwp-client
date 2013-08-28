@@ -1530,7 +1530,7 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
 		
         
         //Replace options and content urls
-        if ($overwrite) {
+        if ($overwrite) {//fresh WP package to existing site
             //Get New Table prefix
             $new_table_prefix = trim($this->get_table_prefix());
             //Retrieve old wp_config
@@ -1552,7 +1552,7 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
 			$wp_filesystem->put_contents($remote_abspath . 'wp-config.php', $new_lines);
             
             //@unlink(ABSPATH . 'iwp-temp-wp-config.php');
-			$wp_filesystem->prefix($remote_abspath . 'iwp-temp-wp-config.php', false, 'f');
+			$wp_filesystem->delete($remote_abspath . 'iwp-temp-wp-config.php', false, 'f');
             
             //Replace options
             $query = "SELECT option_value FROM " . $new_table_prefix . "options WHERE option_name = 'home'";
