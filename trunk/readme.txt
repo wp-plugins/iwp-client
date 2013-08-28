@@ -48,6 +48,9 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog ==
 
+= 1.2.1 =
+* Fix: Fatal error calling prefix method while cloning a fresh package to existing site
+
 = 1.2.0 =
 * Improvement: Backup fail safe option now uses only php db dump and pclZip
 * Improvement: Better feedback regarding completion of backups even in case of error
