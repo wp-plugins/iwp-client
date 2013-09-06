@@ -48,6 +48,10 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog ==
 
+= 1.2.2 =
+* Improvement: Minor improvements for restore/clone
+* Fix: Warning errors and bug fixes for restore/clone
+
 = 1.2.1 =
 * Fix: Fatal error calling prefix method while cloning a fresh package to existing site
 
