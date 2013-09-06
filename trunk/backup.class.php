@@ -1202,7 +1202,7 @@ function delete_task_now($task_name){
 function iwp_mmb_direct_to_any_copy_dir($from, $to, $skip_list = array() ) {//$from => direct file system, $to => automatic filesystem
 	global $wp_filesystem;
 	
-	$wp_temp_direct = new WP_Filesystem_Direct();
+	$wp_temp_direct = new WP_Filesystem_Direct('');
 	
 
 	$dirlist = $wp_temp_direct->dirlist($from);
@@ -1399,8 +1399,18 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
 		
 		// do process
 		$temp_dir = get_temp_dir();
-		$new_temp_folder = trailingslashit($temp_dir).'IWP_Restore_temp_dir_kjhdsjfkhsdkhfksjhdfkjh/';//should be random
-		mkdir($new_temp_folder, 0755);// new folder should be empty
+		$new_temp_folder = untrailingslashit($temp_dir);
+		$temp_uniq = md5(microtime(1));//should be random
+		while (is_dir($new_temp_folder .'/'. $temp_uniq )) {
+			$temp_uniq = md5(microtime(1));
+		}
+		$new_temp_folder = trailingslashit($new_temp_folder .'/'. $temp_uniq);
+		$is_dir_created = mkdir($new_temp_folder);// new folder should be empty
+		if(!$is_dir_created){
+			return array(
+				   'error' => 'Unable to create a temporary directory.'
+			);
+		}
 		
 		//echo '<pre>$new_temp_folder:'; var_dump($new_temp_folder); echo '</pre>';
 				
@@ -1424,10 +1434,10 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
 		/////////////////// dev ////////////////////////
         
         if ($backup_file && file_exists($backup_file)) {
-            if ($overwrite) {
+            if ($overwrite) {//clone only fresh or existing to existing
                 //Keep old db credentials before overwrite
                 if (!$wp_filesystem->copy($remote_abspath . 'wp-config.php', $remote_abspath . 'iwp-temp-wp-config.php', true)) {
-                    @unlink($backup_file);
+                    if($unlink_file) @unlink($backup_file);
                     return array(
                         'error' => 'Error creating wp-config. Please check your write permissions.'
                     );
@@ -1486,9 +1496,9 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
             }
 			$this->wpdb_reconnect();
             
-            /*if ($unlink_file) {
+            if ($unlink_file) {
                 @unlink($backup_file);
-            }*/
+            }
             
             if (!$result) {
                 return array(
@@ -1510,7 +1520,7 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
             
         } else {
             return array(
-                'error' => 'Error while restoring. The WP root directory is not writable. Set write permission(755 or 777).'
+                'error' => 'Backup file not found.'
             );
         }
 		
@@ -1519,8 +1529,8 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
 		$copy_result = $this->iwp_mmb_direct_to_any_copy_dir($new_temp_folder, $remote_abspath);
 		
 		if ( is_wp_error($copy_result) ){
-			$wp_temp_direct2 = WP_Filesystem_Direct();
-			$wp_temp_direct2->delete($new_temp_folder, 2);
+			$wp_temp_direct2 = new WP_Filesystem_Direct('');
+			$wp_temp_direct2->delete($new_temp_folder, true);
 			return $copy_result;
 		}
 		
@@ -1530,7 +1540,7 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
 		
         
         //Replace options and content urls
-        if ($overwrite) {//fresh WP package to existing site
+        if ($overwrite) {//fresh WP package or existing to existing site
             //Get New Table prefix
             $new_table_prefix = trim($this->get_table_prefix());
             //Retrieve old wp_config
@@ -1647,8 +1657,8 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
 		}
 		
 		//clear the temp directory
-		$wp_temp_direct2 = new WP_Filesystem_Direct();
-		$wp_temp_direct2->delete($new_temp_folder, 2);
+		$wp_temp_direct2 = new WP_Filesystem_Direct('');
+		$wp_temp_direct2->delete($new_temp_folder, true);
                 
         return !empty($new_user) ? $new_user : true ;
     }
@@ -1718,7 +1728,6 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
 			}
 		}
         
-        @unlink($file_name);
         return true;
     }
     
