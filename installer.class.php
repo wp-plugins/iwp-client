@@ -534,7 +534,7 @@ class IWP_MMB_Installer extends IWP_MMB_Core
 			
 			// try default wordpress upgrader
 			if(!empty($plugins)){
-				$updateplugins = $this->upgrade_plugins(array_keys($plugins));
+				$updateplugins = $this->upgrade_plugins($plugins);
 				if(!empty($updateplugins) && isset($updateplugins['upgraded'])){
 					foreach ($premium_update as $key => $update) {
 						$update = array_change_key_case($update, CASE_LOWER);
