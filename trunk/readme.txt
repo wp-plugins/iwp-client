@@ -48,6 +48,9 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog ==
 
+= 1.2.3 =
+* Fix: Gravity forms update support
+
 = 1.2.2 =
 * Improvement: Minor improvements for restore/clone
 * Fix: Warning errors and bug fixes for restore/clone
