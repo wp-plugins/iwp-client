@@ -176,9 +176,14 @@ if (is_array($params['account_info'])) { //only if sends from IWP Admin Panel fi
                 if (is_array($before[$task_name]['task_results'])) {
                     $before[$task_name]['task_results'] = array_values($before[$task_name]['task_results']);
                 }
-                $before[$task_name]['task_results'][count($before[$task_name]['task_results'])]['time'] = (isset($time) && $time) ? $time : time();
+                //$before[$task_name]['task_results'][count($before[$task_name]['task_results'])]['time'] = (isset($time) && $time) ? $time : time();
             //}
-            
+            if (isset($time) && $time) { //This will occur for schedule runtask.
+                $before[$task_name]['task_results'][count($before[$task_name]['task_results'])]['time'] = $time;
+			}else{
+				if($task_name == 'Backup Now')
+				 $before[$task_name]['task_results'][count($before[$task_name]['task_results'])]['time'] = time();
+			}
             
             $this->update_tasks($before);
             //update_option('iwp_client_backup_tasks', $before);
