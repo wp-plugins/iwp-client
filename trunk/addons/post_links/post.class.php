@@ -109,133 +109,137 @@ class IWP_MMB_Post extends IWP_MMB_Core
         if ($match_count > 0) {
             $attachments  = array();
             $post_content = $post_data['post_content'];
-				
-            foreach ($get_urls as $get_url_k => $get_url) {
-                // unset url in attachment array
-                foreach ($post_atta_img as $atta_url_k => $atta_url_v) {
-                    $match_patt_url = '/' . str_replace($rep, $with, substr($atta_url_v['src'], 0, strrpos($atta_url_v['src'], '.'))) . '/';
-                    if (preg_match($match_patt_url, $get_url[4])) {
-                        unset($post_atta_img[$atta_url_k]);
-                    }
-                }
-                $pic_from_other_site = $get_urls[$get_url_k][4];
-               /* if(strpos($pic_from_other_site,'exammple.com') === false){
-                   continue;
-                }*/
-				
-                if (isset($get_urls[$get_url_k][6])) { // url have parent, don't download this url
-                    if ($get_url[1] != '') {
-                        // change src url
-                        $s_mmb_mp = '/' . str_replace($rep, $with, $get_url[4]) . '/';
-                        
-                        $s_img_atta   = wp_get_attachment_image_src($get_urls[$get_url_k][6]);
-                        $s_mmb_rp     = $s_img_atta[0];
-                        $post_content = preg_replace($s_mmb_mp, $s_mmb_rp, $post_content);
-                        // change attachment url
-                        if (preg_match('/attachment_id/i', $get_url[2])) {
-                            $iwp_mmb_mp       = '/' . str_replace($rep, $with, $get_url[2]) . '/';
-                            $iwp_mmb_rp       = get_bloginfo('wpurl') . '/?attachment_id=' . $get_urls[$get_url_k][6];
-                            $post_content = preg_replace($iwp_mmb_mp, $iwp_mmb_rp, $post_content);
-                        }
-                    }
-                    continue;
-                }
-                
-                $no_thumb = '';
-                if (preg_match('/-\d{3}x\d{3}\.[a-zA-Z0-9]{3,4}$/', $get_url[4])) {
-                    $no_thumb = preg_replace('/-\d{3}x\d{3}\.[a-zA-Z0-9]{3,4}$/', '.' . $get_url[5], $get_url[4]);
-                } else {
-                    $no_thumb = $get_url[4];
-                }
-                
-                if(isset($upload['error']) && !empty($upload['error'])){
-                	return array('error' => $upload['error']);
-                }
-                $file_name = basename($no_thumb);
-                $tmp_file  = download_url($no_thumb);
-                
-                if(is_wp_error($tmp_file)){
-                	return array('error' => $tmp_file->get_error_message());
-                }
-                
-                $attach_upload['url']  = $upload['url'] . '/' . $file_name;
-                $attach_upload['path'] = $upload['path'] . '/' . $file_name;
-                $renamed               = @rename($tmp_file, $attach_upload['path']);
-                if ($renamed === true) {
-                    $match_pattern   = '/' . str_replace($rep, $with, $get_url[4]) . '/';
-                    $replace_pattern = $attach_upload['url'];
-                    $post_content    = preg_replace($match_pattern, $replace_pattern, $post_content);
-                    if (preg_match('/-\d{3}x\d{3}\.[a-zA-Z0-9]{3,4}$/', $get_url[4])) {
-                        $match_pattern = '/' . str_replace($rep, $with, preg_replace('/-\d{3}x\d{3}\.[a-zA-Z0-9]{3,4}$/', '.' . $get_url[5], $get_url[4])) . '/';
-                        $post_content  = preg_replace($match_pattern, $replace_pattern, $post_content);
-                    }
-                    
-                    $attachment = array(
-                        'post_title' => $file_name,
-                        'post_content' => '',
-                        'post_type' => 'attachment',
-                        //'post_parent' => $post_id,
-                        'post_mime_type' => 'image/' . $get_url[5],
-                        'guid' => $attach_upload['url']
-                    );
-                    
-                    // Save the data
-                    
-                    $attach_id = wp_insert_attachment($attachment, $attach_upload['path']);
-                    
-                    $attachments[$attach_id] = 0;
-                    
-                    // featured image
-                    if ($post_featured_img != '') {
-                        $feat_img_url = '';
-                        if (preg_match('/-\d{3}x\d{3}\.[a-zA-Z0-9]{3,4}$/', $post_featured_img)) {
-                            $feat_img_url = substr($post_featured_img, 0, strrpos($post_featured_img, '.') - 8);
-                        } else {
-                            $feat_img_url = substr($post_featured_img, 0, strrpos($post_featured_img, '.'));
-                        }
-                        $m_feat_url = '/' . str_replace($rep, $with, $feat_img_url) . '/';
-                        if (preg_match($m_feat_url, $get_url[4])) {
-                            $post_featured_img       = '';
-                            $attachments[$attach_id] = $attach_id;
-                        }
-                    }
-                    
-                    // set $get_urls value[6] - parent atta_id
-                    foreach ($get_urls as $url_k => $url_v) {
-                        if ($get_url_k != $url_k) {
-                            $s_get_url = '';
-                            if (preg_match('/-\d{3}x\d{3}\.[a-zA-Z0-9]{3,4}$/', $url_v[4])) {
-                                $s_get_url = substr($url_v[4], 0, strrpos($url_v[4], '.') - 8);
-                            } else {
-                                $s_get_url = substr($url_v[4], 0, strrpos($url_v[4], '.'));
-                            }
-                            $m_patt_url = '/' . str_replace($rep, $with, $s_get_url) . '/';
-                            if (preg_match($m_patt_url, $get_url[4])) {
-                                array_push($get_urls[$url_k], $attach_id);
-                            }
-                        }
-                    }
-                    
-                    
-                    $some_data = wp_generate_attachment_metadata($attach_id, $attach_upload['path']);
-                    wp_update_attachment_metadata($attach_id, $some_data);
-                    
-                    
-                    //changing href of a tag
-                    if ($get_url[1] != '') {
-                        $iwp_mmb_mp = '/' . str_replace($rep, $with, $get_url[2]) . '/';
-                        if (preg_match('/attachment_id/i', $get_url[2])) {
-                            $iwp_mmb_rp       = get_bloginfo('wpurl') . '/?attachment_id=' . $attach_id;
-                            $post_content = preg_replace($iwp_mmb_mp, $iwp_mmb_rp, $post_content);
-                        }
-                    }
-                } else {
-                	@unlink($tmp_file);
-                	return array('error' => "Cannot create attachment file in ".$attach_upload['path']." Please set correct permissions.");
-                	
-                }
-                @unlink($tmp_file);
-            }
+			
+			if(!empty($get_urls) && is_array($get_urls)){
+				foreach ($get_urls as $get_url_k => $get_url) {
+					// unset url in attachment array
+					if(!empty($post_atta_img) && is_array($post_atta_img)){
+						foreach ($post_atta_img as $atta_url_k => $atta_url_v) {
+							$match_patt_url = '/' . str_replace($rep, $with, substr($atta_url_v['src'], 0, strrpos($atta_url_v['src'], '.'))) . '/';
+							if (preg_match($match_patt_url, $get_url[4])) {
+								unset($post_atta_img[$atta_url_k]);
+							}
+						}
+					}
+					$pic_from_other_site = $get_urls[$get_url_k][4];
+				   /* if(strpos($pic_from_other_site,'exammple.com') === false){
+					   continue;
+					}*/
+					
+					if (isset($get_urls[$get_url_k][6])) { // url have parent, don't download this url
+						if ($get_url[1] != '') {
+							// change src url
+							$s_mmb_mp = '/' . str_replace($rep, $with, $get_url[4]) . '/';
+							
+							$s_img_atta   = wp_get_attachment_image_src($get_urls[$get_url_k][6]);
+							$s_mmb_rp     = $s_img_atta[0];
+							$post_content = preg_replace($s_mmb_mp, $s_mmb_rp, $post_content);
+							// change attachment url
+							if (preg_match('/attachment_id/i', $get_url[2])) {
+								$iwp_mmb_mp       = '/' . str_replace($rep, $with, $get_url[2]) . '/';
+								$iwp_mmb_rp       = get_bloginfo('wpurl') . '/?attachment_id=' . $get_urls[$get_url_k][6];
+								$post_content = preg_replace($iwp_mmb_mp, $iwp_mmb_rp, $post_content);
+							}
+						}
+						continue;
+					}
+					
+					$no_thumb = '';
+					if (preg_match('/-\d{3}x\d{3}\.[a-zA-Z0-9]{3,4}$/', $get_url[4])) {
+						$no_thumb = preg_replace('/-\d{3}x\d{3}\.[a-zA-Z0-9]{3,4}$/', '.' . $get_url[5], $get_url[4]);
+					} else {
+						$no_thumb = $get_url[4];
+					}
+					
+					if(isset($upload['error']) && !empty($upload['error'])){
+						return array('error' => $upload['error']);
+					}
+					$file_name = basename($no_thumb);
+					$tmp_file  = download_url($no_thumb);
+					
+					if(is_wp_error($tmp_file)){
+						return array('error' => $tmp_file->get_error_message());
+					}
+					
+					$attach_upload['url']  = $upload['url'] . '/' . $file_name;
+					$attach_upload['path'] = $upload['path'] . '/' . $file_name;
+					$renamed               = @rename($tmp_file, $attach_upload['path']);
+					if ($renamed === true) {
+						$match_pattern   = '/' . str_replace($rep, $with, $get_url[4]) . '/';
+						$replace_pattern = $attach_upload['url'];
+						$post_content    = preg_replace($match_pattern, $replace_pattern, $post_content);
+						if (preg_match('/-\d{3}x\d{3}\.[a-zA-Z0-9]{3,4}$/', $get_url[4])) {
+							$match_pattern = '/' . str_replace($rep, $with, preg_replace('/-\d{3}x\d{3}\.[a-zA-Z0-9]{3,4}$/', '.' . $get_url[5], $get_url[4])) . '/';
+							$post_content  = preg_replace($match_pattern, $replace_pattern, $post_content);
+						}
+						
+						$attachment = array(
+							'post_title' => $file_name,
+							'post_content' => '',
+							'post_type' => 'attachment',
+							//'post_parent' => $post_id,
+							'post_mime_type' => 'image/' . $get_url[5],
+							'guid' => $attach_upload['url']
+						);
+						
+						// Save the data
+						
+						$attach_id = wp_insert_attachment($attachment, $attach_upload['path']);
+						
+						$attachments[$attach_id] = 0;
+						
+						// featured image
+						if ($post_featured_img != '') {
+							$feat_img_url = '';
+							if (preg_match('/-\d{3}x\d{3}\.[a-zA-Z0-9]{3,4}$/', $post_featured_img)) {
+								$feat_img_url = substr($post_featured_img, 0, strrpos($post_featured_img, '.') - 8);
+							} else {
+								$feat_img_url = substr($post_featured_img, 0, strrpos($post_featured_img, '.'));
+							}
+							$m_feat_url = '/' . str_replace($rep, $with, $feat_img_url) . '/';
+							if (preg_match($m_feat_url, $get_url[4])) {
+								$post_featured_img       = '';
+								$attachments[$attach_id] = $attach_id;
+							}
+						}
+						
+						// set $get_urls value[6] - parent atta_id
+						foreach ($get_urls as $url_k => $url_v) {
+							if ($get_url_k != $url_k) {
+								$s_get_url = '';
+								if (preg_match('/-\d{3}x\d{3}\.[a-zA-Z0-9]{3,4}$/', $url_v[4])) {
+									$s_get_url = substr($url_v[4], 0, strrpos($url_v[4], '.') - 8);
+								} else {
+									$s_get_url = substr($url_v[4], 0, strrpos($url_v[4], '.'));
+								}
+								$m_patt_url = '/' . str_replace($rep, $with, $s_get_url) . '/';
+								if (preg_match($m_patt_url, $get_url[4])) {
+									array_push($get_urls[$url_k], $attach_id);
+								}
+							}
+						}
+						
+						
+						$some_data = wp_generate_attachment_metadata($attach_id, $attach_upload['path']);
+						wp_update_attachment_metadata($attach_id, $some_data);
+						
+						
+						//changing href of a tag
+						if ($get_url[1] != '') {
+							$iwp_mmb_mp = '/' . str_replace($rep, $with, $get_url[2]) . '/';
+							if (preg_match('/attachment_id/i', $get_url[2])) {
+								$iwp_mmb_rp       = get_bloginfo('wpurl') . '/?attachment_id=' . $attach_id;
+								$post_content = preg_replace($iwp_mmb_mp, $iwp_mmb_rp, $post_content);
+							}
+						}
+					} else {
+						@unlink($tmp_file);
+						return array('error' => "Cannot create attachment file in ".$attach_upload['path']." Please set correct permissions.");
+						
+					}
+					@unlink($tmp_file);
+				}
+			}
             
             
             $post_data['post_content'] = $post_content;

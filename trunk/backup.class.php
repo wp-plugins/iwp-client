@@ -1496,7 +1496,7 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
 				require_once $GLOBALS['iwp_mmb_plugin_dir'].'/pclzip.class.php';
 				iwp_mmb_print_flush('ZIP Extract PCL: Start');
                 $archive = new IWPPclZip($backup_file);
-                $result  = $archive->extract(PCLZIP_OPT_PATH, $new_temp_folder, PCLZIP_OPT_REPLACE_NEWER);
+                $result  = $archive->extract(PCLZIP_OPT_PATH, $new_temp_folder, PCLZIP_OPT_TEMP_FILE_THRESHOLD, 1);
 				iwp_mmb_print_flush('ZIP Extract PCL: End');
             }
 			$this->wpdb_reconnect();
