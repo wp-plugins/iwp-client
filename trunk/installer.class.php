@@ -51,6 +51,7 @@ class IWP_MMB_Installer extends IWP_MMB_Core
     
     function install_remote_file($params)
     {
+				
         global $wp_filesystem;
         extract($params);
         
@@ -90,12 +91,15 @@ class IWP_MMB_Installer extends IWP_MMB_Core
                 'hook_extra' => array()
             ));
         }
-        
+				
         if ($activate) {
             if ($type == 'plugins') {
                 include_once(ABSPATH . 'wp-admin/includes/plugin.php');
-                $all_plugins = get_plugins();
-                foreach ($all_plugins as $plugin_slug => $plugin) {
+                 
+				 wp_cache_delete( 'plugins', 'plugins' );
+				 
+				$all_plugins = get_plugins();
+				foreach ($all_plugins as $plugin_slug => $plugin) {
                     $plugin_dir = preg_split('/\//', $plugin_slug);
                     foreach ($install_info as $key => $install) {
                         if (!$install || is_wp_error($install))

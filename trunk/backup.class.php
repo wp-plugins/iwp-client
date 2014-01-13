@@ -2100,7 +2100,9 @@ function ftp_backup($args)
 
 	        require_once $GLOBALS['iwp_mmb_plugin_dir'] . '/lib/dropbox.php';
 	        
-	        $dropbox = new Dropbox($consumer_key, $consumer_secret);
+			
+			$dropbox = new IWP_Dropbox($consumer_key, $consumer_secret);
+			
 	        $dropbox->setOAuthTokens($oauth_token, $oauth_token_secret);
 	        
 	        if ($dropbox_site_folder == true)
@@ -2134,7 +2136,10 @@ function ftp_backup($args)
         
         require_once $GLOBALS['iwp_mmb_plugin_dir'] . '/lib/dropbox.php';
         
-        $dropbox = new Dropbox($consumer_key, $consumer_secret);
+		
+		$dropbox = new IWP_Dropbox($consumer_key, $consumer_secret);
+		
+        
         $dropbox->setOAuthTokens($oauth_token, $oauth_token_secret);
         
         if ($dropbox_site_folder == true)
@@ -2159,7 +2164,10 @@ function ftp_backup($args)
   		
   		require_once $GLOBALS['iwp_mmb_plugin_dir']  . '/lib/dropbox.php';
   		
-  		$dropbox = new Dropbox($consumer_key, $consumer_secret);
+		
+		$dropbox = new IWP_Dropbox($consumer_key, $consumer_secret);
+		
+  		
         $dropbox->setOAuthTokens($oauth_token, $oauth_token_secret);
         
         if ($dropbox_site_folder == true)
