@@ -1,5 +1,5 @@
 <?php
-class Dropbox {
+class IWP_Dropbox {
 	const API_URL = 'https://api.dropbox.com/';
 	const API_CONTENT_URL = 'https://api-content.dropbox.com/';
 	const API_WWW_URL = 'https://www.dropbox.com/';
@@ -42,7 +42,7 @@ class Dropbox {
 	public function upload($file, $path = '',$overwrite=true){
 		$file = str_replace("\\", "/",$file);
 		if (!is_readable($file) or !is_file($file))
-			throw new DropboxException("Error: File \"$file\" is not readable or doesn't exist.");
+			throw new IWP_DropboxException("Error: File \"$file\" is not readable or doesn't exist.");
         $filesize=filesize($file);
         if ($filesize < (1024*1024*50)) {  //chunk transfer on bigger uploads <50MB
             $filehandle = fopen($file,'r');
@@ -58,7 +58,7 @@ class Dropbox {
     public function chunked_upload($file, $path = '',$overwrite=true){
         $file = str_replace("\\", "/",$file);
         if (!is_readable($file) or !is_file($file))
-            throw new DropboxException("Error: File \"$file\" is not readable or doesn't exist.");
+            throw new IWP_DropboxException("Error: File \"$file\" is not readable or doesn't exist.");
         $file_handle=fopen($file,'r');
         $uploadid=null;
         $offset=0;
@@ -105,7 +105,7 @@ class Dropbox {
 
 	public function search($path = '', $query , $fileLimit = 1000){
 		if (strlen($query)>=3)
-			throw new DropboxException("Error: Query \"$query\" must three characters long.");
+			throw new IWP_DropboxException("Error: Query \"$query\" must three characters long.");
 		$url = self::API_URL.self::API_VERSION_URL.'search/'.$this->root.'/'.trim($path,'/');
 		return $this->request($url, array('query' => $query, 'file_limit' => $fileLimit));
 	}
@@ -154,7 +154,7 @@ class Dropbox {
 			elseif(isset($output['error']['hash']) && $output['error']['hash'] != '') $message = (string) $output['error']['hash'];
 			elseif (0!=curl_errno($ch)) $message = '('.curl_errno($ch).') '.curl_error($ch);
 			else $message = '('.$status.') Invalid response.';
-			throw new DropboxException($message);
+			throw new IWP_DropboxException($message);
 		}
 		curl_close($ch);
 		return array( 'authurl'		   => self::API_WWW_URL . self::API_VERSION_URL . 'oauth/authorize?oauth_token='.$oauth_token['oauth_token'].'&oauth_callback='.urlencode($callback_url),
@@ -188,7 +188,7 @@ class Dropbox {
 			elseif(isset($output['error']['hash']) && $output['error']['hash'] != '') $message = (string) $output['error']['hash'];
 			elseif (0!=curl_errno($ch)) $message = '('.curl_errno($ch).') '.curl_error($ch);
 			else $message = '('.$status.') Invalid response.';
-			throw new DropboxException($message);
+			throw new IWP_DropboxException($message);
 		}
 	}
 
@@ -257,7 +257,7 @@ class Dropbox {
 			elseif ($status['http_code']==503) $message = '(503) Your app is making too many requests and is being rate limited. 503s can trigger on a per-app or per-user basis.';
 			elseif ($status['http_code']==507) $message = '(507) User is over Dropbox storage quota.';
 			else $message = '('.$status['http_code'].') Invalid response.';
-			throw new DropboxException($message);
+			throw new IWP_DropboxException($message);
 		} else {
 			curl_close($ch);
 			if (!is_array($output))
@@ -280,6 +280,6 @@ class Dropbox {
 
 }
 
-class DropboxException extends Exception {
+class IWP_DropboxException extends Exception {
 }
 ?>
