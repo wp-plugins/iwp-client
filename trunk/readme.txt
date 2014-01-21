@@ -48,6 +48,9 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog ==
 
+= 1.2.8 =
+* Fix: Minor security update
+
 = 1.2.7 =
 * Fix: Activation failed on multiple plugin installation is fixed
 * Fix: Dropbox class name conflit with other plugins is fixed
