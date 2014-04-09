@@ -32,6 +32,7 @@ class IWP_MMB_Core extends IWP_MMB_Helper
     var $links_instance;
     var $user_instance;
     var $backup_instance;
+	var $wordfence_instance;
     var $installer_instance;
     var $iwp_mmb_multisite;
     var $network_admin_install;
@@ -100,7 +101,7 @@ class IWP_MMB_Core extends IWP_MMB_Helper
 		$this->iwp_mmb_pre_init_filters['get_stats']['iwp_mmb_stats_filter'][] = 'iwp_mmb_pre_init_stats';
 		
 		$_iwp_mmb_item_filter['pre_init_stats'] = array( 'core_update', 'hit_counter', 'comments', 'backups', 'posts', 'drafts', 'scheduled' );
-		$_iwp_mmb_item_filter['get'] = array( 'updates', 'errors' );
+		$_iwp_mmb_item_filter['get'] = array( 'updates', 'errors','plugins_status' );
 		
 		$this->iwp_mmb_pre_init_actions = array(
 			'backup_req' => 'iwp_mmb_get_backup_req',
@@ -162,7 +163,22 @@ class IWP_MMB_Core extends IWP_MMB_Helper
 			
 			'wp_optimize' => 'iwp_mmb_wp_optimize',
 			
-			'backup_repository' => 'iwp_mmb_backup_repository'
+			'backup_repository' => 'iwp_mmb_backup_repository',
+
+            'get_all_links'         => 'iwp_mmb_get_all_links',
+            'update_broken_link'    => 'iwp_mmb_update_broken_link',
+            'unlink_broken_link'    => 'iwp_mmb_unlink_broken_link',
+            'markasnot_broken_link' => 'iwp_mmb_markasnot_broken_link',
+            'dismiss_broken_link' => 'iwp_mmb_dismiss_broken_link',
+            'undismiss_broken_link' => 'iwp_mmb_undismiss_broken_link',
+            'bulk_actions_processor' => 'iwp_mmb_bulk_actions_processor',
+
+            'file_editor_upload'    => 'iwp_mmb_file_editor_upload',
+
+            'put_redirect_url'      =>  'iwp_mmb_gwmt_redirect_url',
+            'put_redirect_url_again'=>  'iwp_mmb_gwmt_redirect_url_again',
+			'wordfence_scan' => 'iwp_mmb_wordfence_scan',
+			'wordfence_load' => 'iwp_mmb_wordfence_load'
 		);
 		
 		add_action('rightnow_end', array( &$this, 'add_right_now_info' ));       
@@ -312,7 +328,55 @@ class IWP_MMB_Core extends IWP_MMB_Helper
         
         return $this->optimize_instance;
     }
+
+
+    /**
+     * Gets an instance of the WP_BrokenLinks class
+     * 
+     */
+    function wp_blc_get_blinks()
+    {
+        global $iwp_mmb_plugin_dir;
+	require_once("$iwp_mmb_plugin_dir/addons/brokenlinks/brokenlinks.class.php");
+        if (!isset($this->blc_get_blinks)) {
+            $this->blc_get_blinks = new IWP_MMB_BLC();
+        }
+        
+        return $this->blc_get_blinks;
+    }
     
+
+    /**
+     * Gets an instance of the WP_BrokenLinks class
+     * 
+     */
+    function wp_google_webmasters_crawls()
+    {
+        global $iwp_mmb_plugin_dir;
+        require_once("$iwp_mmb_plugin_dir/addons/google_webmasters/google_webmasters.class.php");
+		if (!isset($this->get_google_webmasters_crawls)) {
+            $this->get_google_webmasters_crawls = new IWP_MMB_GWMT();
+        }
+        
+        return $this->get_google_webmasters_crawls;
+    }
+    
+    /**
+     * Gets an instance of the fileEditor class
+     * 
+     */
+    function wp_get_file_editor()
+    {
+        global $iwp_mmb_plugin_dir;
+        require_once("$iwp_mmb_plugin_dir/addons/file_editor/file_editor.class.php");
+		if (!isset($this->get_file_editor)) {
+            $this->get_file_editor = new IWP_MMB_fileEditor();
+        }
+        
+        return $this->get_file_editor;
+    }
+    
+
     /**
      * Gets an instance of the Comment class
      * 
@@ -465,13 +529,25 @@ class IWP_MMB_Core extends IWP_MMB_Helper
         return $this->link_instance;
     }
     
-    function get_installer_instance()
+	function get_installer_instance()
     {
         if (!isset($this->installer_instance)) {
             $this->installer_instance = new IWP_MMB_Installer();
         }
         return $this->installer_instance;
     }
+	
+	/*
+	 * Get an instance of WordFence 
+	 */
+	 function get_wordfence_instance()
+	 {
+	 	if (!isset($this->wordfence_instance)) {
+            $this->wordfence_instance = new IWP_WORDFENCE();
+        }
+        return $this->wordfence_instance;
+	 }
+	
 	
     /**
      * Plugin install callback function
