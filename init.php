@@ -4,7 +4,7 @@ Plugin Name: InfiniteWP - Client
 Plugin URI: http://infinitewp.com/
 Description: This is the client plugin of InfiniteWP that communicates with the InfiniteWP Admin panel.
 Author: Revmakx
-Version: 1.2.8
+Version: 1.2.9
 Author URI: http://www.revmakx.com
 */
 /************************************************************
@@ -26,7 +26,7 @@ Author URI: http://www.revmakx.com
  **************************************************************/
 
 if(!defined('IWP_MMB_CLIENT_VERSION'))
-	define('IWP_MMB_CLIENT_VERSION', '1.2.8');
+	define('IWP_MMB_CLIENT_VERSION', '1.2.9');
 
 
 if ( !defined('IWP_MMB_XFRAME_COOKIE')){
@@ -54,7 +54,6 @@ require_once("$iwp_mmb_plugin_dir/addons/comments/comments.class.php");
 
 require_once("$iwp_mmb_plugin_dir/addons/post_links/link.class.php");
 require_once("$iwp_mmb_plugin_dir/addons/post_links/post.class.php");
-
 require_once("$iwp_mmb_plugin_dir/addons/wp_optimize/optimize.class.php");
 
 require_once("$iwp_mmb_plugin_dir/api.php");
@@ -1004,6 +1003,189 @@ if( !function_exists('iwp_mmb_wp_optimize')){
 }
 
 //WP-Optimize_end
+
+/*
+ *WordFence Addon Start 
+ */
+
+if( !function_exists('iwp_mmb_wordfence_scan')){
+	function iwp_mmb_wordfence_scan($params){
+		global $iwp_mmb_core,$iwp_mmb_plugin_dir;
+                require_once("$iwp_mmb_plugin_dir/addons/wordfence/wordfence.class.php");
+		$iwp_mmb_core->get_wordfence_instance();
+		
+		$return = $iwp_mmb_core->wordfence_instance->scan($params);
+		if (is_array($return) && array_key_exists('error', $return))
+			iwp_mmb_response($return['error'], false);
+		else {
+			iwp_mmb_response($return, true);
+		}
+	}
+}
+
+if( !function_exists('iwp_mmb_wordfence_load')){
+	function iwp_mmb_wordfence_load($params){
+		global $iwp_mmb_core,$iwp_mmb_plugin_dir;
+                require_once("$iwp_mmb_plugin_dir/addons/wordfence/wordfence.class.php");
+		$iwp_mmb_core->get_wordfence_instance();
+		
+		$return = $iwp_mmb_core->wordfence_instance->load($params);
+		if (is_array($return) && array_key_exists('error', $return))
+			iwp_mmb_response($return['error'], false);
+		else {
+			iwp_mmb_response($return, true);
+		}
+	}
+}
+ 
+/*
+ *WordFence Addon End 
+ */
+
+//WP-BrokenLinks start
+
+if( !function_exists('iwp_mmb_get_all_links')){
+	function iwp_mmb_get_all_links(){
+		global $iwp_mmb_core;
+		$iwp_mmb_core->wp_blc_get_blinks();
+		$return = $iwp_mmb_core->blc_get_blinks->blc_get_all_links($params);
+		if (is_array($return) && array_key_exists('error', $return))
+			iwp_mmb_response($return['error'], false);
+		else {
+			iwp_mmb_response($return, true);
+		}
+	}
+}
+
+if( !function_exists('iwp_mmb_update_broken_link')){
+	function iwp_mmb_update_broken_link($params){
+		global $iwp_mmb_core;
+		$iwp_mmb_core->wp_blc_get_blinks();
+		$return = $iwp_mmb_core->blc_get_blinks->blc_update_link($params);
+		if (is_array($return) && array_key_exists('error', $return))
+			iwp_mmb_response($return['error'], false);
+		else {
+			iwp_mmb_response($return, true);
+		}
+	}
+}
+
+if( !function_exists('iwp_mmb_unlink_broken_link')){
+	function iwp_mmb_unlink_broken_link($params){
+		global $iwp_mmb_core;
+		$iwp_mmb_core->wp_blc_get_blinks();
+		$return = $iwp_mmb_core->blc_get_blinks->blc_unlink($params);
+		if (is_array($return) && array_key_exists('error', $return))
+			iwp_mmb_response($return['error'], false);
+		else {
+			iwp_mmb_response($return, true);
+		}
+	}
+}
+
+if( !function_exists('iwp_mmb_markasnot_broken_link')){
+	function iwp_mmb_markasnot_broken_link($params){
+		global $iwp_mmb_core;
+		$iwp_mmb_core->wp_blc_get_blinks();
+		$return = $iwp_mmb_core->blc_get_blinks->blc_mark_as_not_broken($params);
+		if (is_array($return) && array_key_exists('error', $return))
+			iwp_mmb_response($return['error'], false);
+		else {
+			iwp_mmb_response($return, true);
+		}
+	}
+}
+
+if( !function_exists('iwp_mmb_dismiss_broken_link')){
+	function iwp_mmb_dismiss_broken_link($params){
+		global $iwp_mmb_core;
+		$iwp_mmb_core->wp_blc_get_blinks();
+		$return = $iwp_mmb_core->blc_get_blinks->blc_dismiss_link($params);
+		if (is_array($return) && array_key_exists('error', $return))
+			iwp_mmb_response($return['error'], false);
+		else {
+			iwp_mmb_response($return, true);
+		}
+	}
+}
+
+if( !function_exists('iwp_mmb_undismiss_broken_link')){
+	function iwp_mmb_undismiss_broken_link($params){
+		global $iwp_mmb_core;
+		$iwp_mmb_core->wp_blc_get_blinks();
+		$return = $iwp_mmb_core->blc_get_blinks->blc_undismiss_link($params);
+		if (is_array($return) && array_key_exists('error', $return))
+			iwp_mmb_response($return['error'], false);
+		else {
+			iwp_mmb_response($return, true);
+		}
+	}
+}
+
+if( !function_exists('iwp_mmb_bulk_actions_processor')){
+	function iwp_mmb_bulk_actions_processor($params){
+		global $iwp_mmb_core;
+		$iwp_mmb_core->wp_blc_get_blinks();
+		$return = $iwp_mmb_core->blc_get_blinks->blc_bulk_actions($params);
+		if (is_array($return) && array_key_exists('error', $return))
+			iwp_mmb_response($return['error'], false);
+		else {
+			iwp_mmb_response($return, true);
+		}
+	}
+}
+
+//WP-BrokenLinks end
+
+//WP-GWMTools start
+
+if( !function_exists('iwp_mmb_gwmt_redirect_url')){
+	function iwp_mmb_gwmt_redirect_url($params){
+		global $iwp_mmb_core;
+		$iwp_mmb_core->wp_google_webmasters_crawls();
+		$return = $iwp_mmb_core->get_google_webmasters_crawls->google_webmasters_redirect($params);
+		if (is_array($return) && array_key_exists('error', $return))
+			iwp_mmb_response($return['error'], false);
+		else {
+			iwp_mmb_response($return, true);
+		}
+	}
+}
+
+if( !function_exists('iwp_mmb_gwmt_redirect_url_again')){
+	function iwp_mmb_gwmt_redirect_url_again($params){
+		global $iwp_mmb_core;
+		$iwp_mmb_core->wp_google_webmasters_crawls();
+		$return = $iwp_mmb_core->get_google_webmasters_crawls->google_webmasters_redirect_again($params);
+		if (is_array($return) && array_key_exists('error', $return))
+			iwp_mmb_response($return['error'], false);
+		else {
+			iwp_mmb_response($return, true);
+		}
+	}
+}
+
+
+//WP-GWMTools end
+
+//fileEditor start
+
+if( !function_exists('iwp_mmb_file_editor_upload')){
+	function iwp_mmb_file_editor_upload($params){
+		global $iwp_mmb_core;
+		$iwp_mmb_core->wp_get_file_editor();
+		$return = $iwp_mmb_core->get_file_editor->file_editor_upload($params);
+		if (is_array($return) && array_key_exists('error', $return))
+			iwp_mmb_response($return['error'], false);
+		else {
+			iwp_mmb_response($return, true);
+		}
+	}
+}
+
+
+//fileEditor end
+
 if( !function_exists('iwp_mmb_maintenance_mode')){
  	function iwp_mmb_maintenance_mode( $params ) {
 		global $wp_object_cache;
@@ -1169,6 +1351,22 @@ if(!function_exists('iwp_mmb_auto_print')){
 	}
 }
 
+if(!function_exists('iwp_mmb_check_redirects')){
+	function iwp_mmb_check_redirects(){
+		global $wpdb;
+		$current_url = ($_SERVER['SERVER_PORT']=='443'?'https://':'http://').$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+		$current_url = rtrim($current_url,'/');
+		$success = $wpdb -> get_col($wpdb->prepare("SELECT redirectLink FROM ".$wpdb->prefix."iwp_redirects WHERE oldLink = %s LIMIT 1",$current_url));
+		if(count($success)){
+			if(function_exists(wp_redirect)){
+				wp_redirect($success[0]);	
+			}
+		}
+	}
+}
+
+
+
 $iwp_mmb_core = new IWP_MMB_Core();
 $mmb_core = 1;
 
@@ -1183,6 +1381,9 @@ if (function_exists('register_deactivation_hook'))
 
 if (function_exists('add_action'))
 	add_action('init', 'iwp_mmb_plugin_actions', 99999);
+
+if (function_exists('add_action'))
+	add_action('wp_head', 'iwp_mmb_check_redirects', 99999);
 
 if (function_exists('add_filter'))
 	add_filter('install_plugin_complete_actions','iwp_mmb_iframe_plugins_fix');

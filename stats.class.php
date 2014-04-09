@@ -343,6 +343,37 @@ class IWP_MMB_Stats extends IWP_MMB_Core
 		
         return $stats;
     }
+	
+	function get_plugins_status($stats=array(), $options = array()){
+        $installedPlugins = get_plugins( $plugin_folder );
+        $activePlugins = get_option( 'active_plugins' );
+        
+        foreach ($installedPlugins as $installed=>$pluginDetails) {
+            $pluginData = array('isInstalled' => true);
+            $pluginData['name'] = $pluginDetails['Name'];
+            $pluginData['pluginURI'] = $pluginDetails['PluginURI'];
+            $pluginData['version'] = $pluginDetails['Version'];
+            $pluginData['description'] = $pluginDetails['Description'];
+            $pluginData['author'] = $pluginDetails['Author'];
+            $pluginData['authorURI'] = $pluginDetails['AuthorURI'];
+            $pluginData['textDomain'] = $pluginDetails['TextDomain'];
+            $pluginData['domainPath'] = $pluginDetails['DomainPath'];
+            $pluginData['network'] = $pluginDetails['Network'];
+            $pluginData['title'] = $pluginDetails['Title'];
+            $pluginData['authorName'] = $pluginDetails['AuthorName'];
+            // $pluginData['']
+            if (in_array($installed, $activePlugins)){
+                $pluginData['isActivated'] = true;
+                // $stats['plugins_status'][$installed] = array(true,true);
+            }else{
+                $pluginData['isActivated'] = false;
+                // $stats['plugins_status'][$installed] = array(true,false);
+            }
+            $stats['plugins_status'][$installed] = $pluginData;
+        }
+
+        return $stats;
+    }
     
     function pre_init_stats($params)
     {
@@ -546,7 +577,7 @@ class IWP_MMB_Stats extends IWP_MMB_Core
         return $stats;
     }
     
-    function set_hit_count($fix_count = false)
+    public static function set_hit_count($fix_count = false)
     {
     	global $iwp_mmb_core;
         if ($fix_count || (!is_admin() && !IWP_MMB_Stats::is_bot())) {
@@ -610,7 +641,7 @@ class IWP_MMB_Stats extends IWP_MMB_Core
         return get_option('iwp_client_user_hit_count');
     }
     
-    function is_bot()
+    public static function is_bot()
     {
         $agent = $_SERVER['HTTP_USER_AGENT'];
         
