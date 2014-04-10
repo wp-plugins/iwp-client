@@ -48,9 +48,13 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog ==
 
+= 1.2.10 =
+* Fix: wp_iwp_redirect sql error is fixed
+
+
 = 1.2.9 =
 * Improvement: Support for new addons.
-* Fix: Strict	Non-static method set_hit_count() and is_bot() fixed.
+* Fix: Strict Non-static method set_hit_count() and is_bot() fixed.
 
 = 1.2.8 =
 * Fix: Minor security update

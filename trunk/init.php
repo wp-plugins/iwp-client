@@ -4,7 +4,7 @@ Plugin Name: InfiniteWP - Client
 Plugin URI: http://infinitewp.com/
 Description: This is the client plugin of InfiniteWP that communicates with the InfiniteWP Admin panel.
 Author: Revmakx
-Version: 1.2.9
+Version: 1.2.10
 Author URI: http://www.revmakx.com
 */
 /************************************************************
@@ -26,7 +26,7 @@ Author URI: http://www.revmakx.com
  **************************************************************/
 
 if(!defined('IWP_MMB_CLIENT_VERSION'))
-	define('IWP_MMB_CLIENT_VERSION', '1.2.9');
+	define('IWP_MMB_CLIENT_VERSION', '1.2.10');
 
 
 if ( !defined('IWP_MMB_XFRAME_COOKIE')){
@@ -1356,10 +1356,13 @@ if(!function_exists('iwp_mmb_check_redirects')){
 		global $wpdb;
 		$current_url = ($_SERVER['SERVER_PORT']=='443'?'https://':'http://').$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
 		$current_url = rtrim($current_url,'/');
-		$success = $wpdb -> get_col($wpdb->prepare("SELECT redirectLink FROM ".$wpdb->prefix."iwp_redirects WHERE oldLink = %s LIMIT 1",$current_url));
-		if(count($success)){
-			if(function_exists(wp_redirect)){
-				wp_redirect($success[0]);	
+		$table_name = $wpdb->base_prefix."iwp_redirects";
+		if($wpdb->get_var("SHOW TABLES LIKE '$table_name'") == $table_name) {
+			$success = $wpdb -> get_col($wpdb->prepare("SELECT redirectLink FROM ".$wpdb->base_prefix."iwp_redirects WHERE oldLink = %s LIMIT 1",$current_url));
+			if(count($success)){
+				if(function_exists(wp_redirect)){
+					wp_redirect($success[0]);	
+				}
 			}
 		}
 	}
