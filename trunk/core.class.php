@@ -101,7 +101,7 @@ class IWP_MMB_Core extends IWP_MMB_Helper
 		$this->iwp_mmb_pre_init_filters['get_stats']['iwp_mmb_stats_filter'][] = 'iwp_mmb_pre_init_stats';
 		
 		$_iwp_mmb_item_filter['pre_init_stats'] = array( 'core_update', 'hit_counter', 'comments', 'backups', 'posts', 'drafts', 'scheduled' );
-		$_iwp_mmb_item_filter['get'] = array( 'updates', 'errors','plugins_status' );
+		$_iwp_mmb_item_filter['get'] = array( 'updates', 'errors','plugins_status','themes_status' );
 		
 		$this->iwp_mmb_pre_init_actions = array(
 			'backup_req' => 'iwp_mmb_get_backup_req',

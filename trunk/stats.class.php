@@ -374,6 +374,14 @@ class IWP_MMB_Stats extends IWP_MMB_Core
 
         return $stats;
     }
+ 	function get_themes_status($stats=array(), $options = array()){
+        $params = array('items'=>array('themes'));
+        global $iwp_mmb_core;
+        $iwp_mmb_core->get_installer_instance();
+        $installedThemes = $iwp_mmb_core->installer_instance->get_themes($params);
+        $stats['themes_status'] = $installedThemes;
+        return $stats;
+    }
     
     function pre_init_stats($params)
     {
