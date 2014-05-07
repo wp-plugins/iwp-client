@@ -127,14 +127,14 @@ function iwp_mmb_handle_overhead($clear = false)
             'MEMORY',
             'ARCHIVE'
         ))) {
-            if ($wpdb->base_prefix != $wpdb->prefix) {
-                if (preg_match('/^' . $wpdb->prefix . '*/Ui', $table['Name'])) {
+            if ($wpdb->base_prefix != $wpdb->base_prefix) {
+                if (preg_match('/^' . $wpdb->base_prefix . '*/Ui', $table['Name'])) {
                     if ($table['Data_free'] > 0) {
                         $total_gain += $table['Data_free'] / 1024;
                         $table_string .= $table['Name'] . ",";
                     }
                 }
-            } else if (preg_match('/^' . $wpdb->prefix . '[0-9]{1,20}_*/Ui', $table['Name'])) {
+            } else if (preg_match('/^' . $wpdb->base_prefix . '[0-9]{1,20}_*/Ui', $table['Name'])) {
                 continue;
             } else {
                 if ($table['Data_free'] > 0) {

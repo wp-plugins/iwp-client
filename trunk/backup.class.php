@@ -355,7 +355,7 @@ function delete_task_now($task_name){
         $hash        = md5(time());
         $label       = $type ? $type : 'manual';
         $backup_file = $new_file_path . '/' . $this->site_name . '_' . $label . '_' . $what . '_' . date('Y-m-d') . '_' . $hash . '.zip';
-        $backup_url  = WP_CONTENT_URL . '/infinitewp/backups/' . $this->site_name . '_' . $label . '_' . $what . '_' . date('Y-m-d') . '_' . $hash . '.zip';
+        $backup_url  =  content_url() . '/infinitewp/backups/' . $this->site_name . '_' . $label . '_' . $what . '_' . date('Y-m-d') . '_' . $hash . '.zip';
         
         //Optimize tables?
         if (isset($optimize_tables) && !empty($optimize_tables)) {
@@ -474,6 +474,11 @@ function delete_task_now($task_name){
             if (isset($backup_settings[$task_name]['task_args']['account_info']['iwp_dropbox'])) {
                 $paths['dropbox'] = basename($backup_url);
             }
+			
+			if (isset($backup_settings[$task_name]['task_args']['account_info']['iwp_gdrive'])) {
+                //$paths['gDrive'] = basename($backup_url);
+				$paths['gDriveOrgFileName'] = basename($backup_url);
+            }
             
             if (isset($backup_settings[$task_name]['task_args']['account_info']['iwp_email'])) {
                 $paths['email'] = basename($backup_url);
@@ -552,7 +557,28 @@ function delete_task_now($task_name){
                 $this->wpdb_reconnect();
                 $this->update_status($task_name, 'dropbox', true);
             }
-           
+           if (isset($account_info['iwp_gdrive']) && !empty($account_info['iwp_gdrive'])) {
+			
+				$this->update_status($task_name,'gDrive');
+				$account_info['iwp_gdrive']['backup_file'] = $backup_file;
+                iwp_mmb_print_flush('google Drive upload: Start');
+				$gdrive_result = $this->google_drive_backup($account_info['iwp_gdrive']);
+				iwp_mmb_print_flush('google Drive upload: End');
+				
+				if ($gdrive_result == false && $del_host_file) {
+                    @unlink($backup_file);
+                }
+                
+                if (is_array($gdrive_result) && isset($gdrive_result['error'])) {
+                    return $gdrive_result;
+                }
+				
+				$paths['gDrive'] = $gdrive_result;  				//different from other upload ; storing the gDrive backupfile ID in the paths array for delete operation
+				$paths['gDriveOrgFileName'] = basename($backup_url);
+				
+				$this->update_status($task_name,'gDrive', true);
+                unset($paths['server']);
+			}
             if ($del_host_file) {
                 @unlink($backup_file);
             }
@@ -1021,7 +1047,9 @@ function delete_task_now($task_name){
         global $wpdb;
         $paths   = $this->check_mysql_paths();
         $brace   = (substr(PHP_OS, 0, 3) == 'WIN') ? '"' : '';
-        $command = $brace . $paths['mysqldump'] . $brace . ' --force --host="' . DB_HOST . '" --user="' . DB_USER . '" --password="' . DB_PASSWORD . '" --add-drop-table --skip-lock-tables "' . DB_NAME . '" > ' . $brace . $file . $brace;
+        $command0 = $wpdb->get_col('SHOW TABLES LIKE "'.$wpdb->base_prefix.'%"');
+        $wp_tables = join("\" \"",$command0);
+        $command = $brace . $paths['mysqldump'] . $brace . ' --force --host="' . DB_HOST . '" --user="' . DB_USER . '" --password="' . DB_PASSWORD . '" --add-drop-table --skip-lock-tables "' . DB_NAME . '" "'.$wp_tables.'" > ' . $brace . $file . $brace;
 		iwp_mmb_print_flush('DB DUMP CMD: Start');
         ob_start();
         $result = $this->iwp_mmb_exec($command);
@@ -1054,7 +1082,7 @@ function delete_task_now($task_name){
 			}
 			$_count = 0;
 			$insert_sql = '';
-			$result = mysql_query( 'SHOW TABLES' );
+			$result = mysql_query( 'SHOW TABLES LIKE "'.$wpdb->base_prefix.'%"' );
 			if(!$result)
 			{
 				 return array(
@@ -1133,7 +1161,7 @@ function delete_task_now($task_name){
 		else{
 			iwp_mmb_print_flush('DB DUMP PHP Fail-safe: Start');
 			file_put_contents($file, '');//safe  to reset any old data
-			$tables = $wpdb->get_results('SHOW TABLES', ARRAY_N);
+			$tables = $wpdb->get_results('SHOW TABLES LIKE "'.$wpdb->base_prefix.'%"', ARRAY_N);
 			foreach ($tables as $table) {
 			
 				//drop existing table
@@ -1365,6 +1393,25 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
                     );
                 }
             }
+			elseif(isset($task['task_results'][$result_id]['gDrive'])){
+            	$gdrive_file       = $task['task_results'][$result_id]['gDrive'];
+                $args                = $task['task_args']['account_info']['iwp_gdrive'];
+                $args['backup_file'] = $gdrive_file;
+				iwp_mmb_print_flush('gDrive download: Start');
+                $backup_file         = $this->get_google_drive_backup($args);
+				iwp_mmb_print_flush('gDrive download: End');
+                
+				if(is_array($backup_file) && array_key_exists('error', $backup_file))
+				{
+					return $backup_file;
+				}
+				
+                if ($backup_file == false) {
+                    return array(
+                        'error' => 'Failed to download file from gDrive.'
+                    );
+                }
+            }
 
             
             $what = $tasks[$task_name]['task_args']['what'];
@@ -1417,7 +1464,6 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
 			);
 		}
 		
-		//echo '<pre>$new_temp_folder:'; var_dump($new_temp_folder); echo '</pre>';
 				
 		
 		$remote_abspath = $wp_filesystem->abspath();
@@ -2242,6 +2288,219 @@ function ftp_backup($args)
         }
     }
     
+	function google_drive_backup($args = '', $uploadid = null, $offset = 0)
+	{
+		
+		require_once($GLOBALS['iwp_mmb_plugin_dir'].'/lib/Google/Client.php');
+		require_once($GLOBALS['iwp_mmb_plugin_dir'].'/lib/Google/Http/MediaFileUpload.php');
+		require_once($GLOBALS['iwp_mmb_plugin_dir'].'/lib/Google/Service/Drive.php');
+		
+		//$this -> hisID = $historyID;
+	
+		$upload_file_block_size = 1 *1024 *1024;
+		$iwp_folder_id = '';
+		$sub_folder_id = '';
+		$create_sub_folder = $args['gdrive_site_folder'];
+		$sub_folder_name = $this->site_name;
+		//$task_result = $this->getRequiredData($historyID, "taskResults");
+		
+		$fileSizeUploaded = 0;
+		$resumeURI = false;
+		
+		$client = new Google_Client();
+		$client->setClientId($args['clientID']);
+		$client->setClientSecret($args['clientSecretKey']);
+		$client->setRedirectUri($args['redirectURL']);
+		$client->setScopes(array(
+		  'https://www.googleapis.com/auth/drive',
+		  'https://www.googleapis.com/auth/userinfo.email',
+		  'https://www.googleapis.com/auth/userinfo.profile'));
+		
+		
+		$accessToken = $args['token'];
+		$refreshToken = $accessToken['refresh_token'];
+		$backup_file = $args['backup_file'];
+		
+		try
+		{
+			$client->refreshToken($refreshToken);
+		}
+		catch(Exception $e)
+		{	
+			echo 'google Error ',  $e->getMessage(), "\n";
+			return array("error" => $e->getMessage());
+		}
+		
+		$service = new Google_Service_Drive($client);
+		
+		//create folder if not present
+		try 
+		{
+			$parameters = array();
+			$parameters['q'] = "title = 'infinitewp' and trashed = false and mimeType= 'application/vnd.google-apps.folder'";
+			$files = $service->files->listFiles($parameters);
+			$list_result = array();
+			$list_result = array_merge($list_result, $files->getItems());
+			$list_result = (array)$list_result;
+			
+			if(empty($list_result))
+			{
+				$file = new Google_Service_Drive_DriveFile();
+				$file->setTitle('infinitewp');
+				$file->setMimeType('application/vnd.google-apps.folder');
+				
+				$createdFolder = $service->files->insert($file, array(
+					'mimeType' => 'application/vnd.google-apps.folder',
+				));
+				if($createdFolder)
+				{
+					$createdFolder = (array)$createdFolder;
+					$iwp_folder_id = $createdFolder['id'];
+				}
+			}
+			else
+			{
+				$list_result = (array)$list_result[0];
+				$iwp_folder_id = $list_result['id'];
+			}
+		}catch (Exception $e){
+			print "An error occurred: " . $e->getMessage();
+			return array('error' => $e->getMessage());
+		}
+		
+		//create sub folder by site name
+		if($create_sub_folder)
+		{
+			$parameters = array();
+			$parameters['q'] = "title = '$sub_folder_name' and trashed = false and mimeType = 'application/vnd.google-apps.folder'";
+			$files = $service->files->listFiles($parameters);
+			$list_result = array();
+			$list_result = array_merge($list_result, $files->getItems());
+			$list_result = (array)$list_result;
+			
+			if(empty($list_result))
+			{
+				$file = new Google_Service_Drive_DriveFile();
+				$file->setTitle($sub_folder_name);
+				$file->setMimeType('application/vnd.google-apps.folder');
+				
+				//setting parent as infinitewpFolder
+				$parent = new Google_Service_Drive_ParentReference();
+				$parent->setId($iwp_folder_id);
+				$file->setParents(array($parent));
+				
+				$createdFolder = $service->files->insert($file, array(
+					'mimeType' => 'application/vnd.google-apps.folder',
+				));
+				if($createdFolder)
+				{
+					$createdFolder = (array)$createdFolder;
+					$sub_folder_id = $createdFolder['id'];
+				}
+			}
+			else
+			{
+				$list_result = (array)$list_result[0];
+				$sub_folder_id = $list_result['id'];
+			}
+		}
+		
+		
+		//Insert a file
+		$file = new Google_Service_Drive_DriveFile();
+		$file->setTitle(basename($backup_file));
+		$file->setMimeType('binary/octet-stream');
+		
+		// Set the Parent Folder on Google Drive
+		$parent = new Google_Service_Drive_ParentReference();
+		if(empty($sub_folder_id))
+		{
+			$parent->setId($iwp_folder_id);
+		}
+		else
+		{
+			$parent->setId($sub_folder_id);
+		}
+		$file->setParents(array($parent));
+		
+		$gDriveID = '';
+		try
+		{
+			if(false)
+			{
+				//single upload
+				$data = file_get_contents($backup_file);
+				$createdFile = (array)$service->files->insert($file, array(
+				  'data' => $data,
+				  //'mimeType' => 'text/plain',
+				));
+				$gDriveID = $createdFile['id'];
+			}
+			
+			//multipart upload
+			
+			if(true)
+			{
+				// Call the API with the media upload, defer so it doesn't immediately return.
+				$client->setDefer(true);
+				$request = $service->files->insert($file);
+				
+				// Create a media file upload to represent our upload process.
+				$media = new Google_Http_MediaFileUpload($client, $request, 'application/zip', null, true, $upload_file_block_size);
+				$media->setFileSize(filesize($backup_file));
+				
+				$status = false;
+				$handle = fopen($backup_file, "rb");
+				fseek($handle, $fileSizeUploaded);
+				
+				/* $resArray = array (
+				  'status' => 'completed',
+				  'backupParentHID' => $historyID,
+				); */
+						
+				while (!$status && !feof($handle))
+				{
+					$chunk = fread($handle, $upload_file_block_size);
+					$statusArray = $media->nextChunk($chunk, $resumeURI, $fileSizeUploaded);
+					$status = $statusArray['status'];
+					$resumeURI = $statusArray['resumeURI'];
+					//$fileSizeUploaded = ftell($handle);
+					$fileSizeUploaded = $statusArray['progress'];
+				}
+				
+				$result = false;
+				if($status != false) {
+				  $result = $status;
+				}
+				
+				fclose($handle);
+				$client->setDefer(false);
+				
+				$completeBackupResult = (array)$status;
+				
+				//$gDriveID = $createdFile['id'];	
+				$gDriveID = $completeBackupResult['id'];	
+			}
+		} 
+		catch (Exception $e) 
+		{
+			echo "An error occurred: " . $e->getMessage();
+			return array("error" => $e->getMessage());
+		}
+		
+		/* if($del_host_file)
+		{
+			unset($task_result['task_results'][$historyID]['server']);
+			@unlink($backup_file);
+		} */
+		
+		//$test_this_task = $this->get_this_tasks();
+				
+		//$tasksThere = unserialize($test_this_task['taskResults']);
+		
+		return $gDriveID;			
+	}
+    
 	
     function remove_amazons3_backup($args)
     {
@@ -2281,6 +2540,121 @@ function ftp_backup($args)
     }
 	//IWP Remove ends here
 
+	function get_google_drive_backup($args)
+	{
+		require_once($GLOBALS['iwp_mmb_plugin_dir'].'/lib/Google/Client.php');
+		require_once($GLOBALS['iwp_mmb_plugin_dir'].'/lib/Google/Service/Drive.php');
+		
+		//refresh token 
+		$client = new Google_Client();
+		$client->setClientId($args['clientID']);
+		$client->setClientSecret($args['clientSecretKey']);
+		$client->setRedirectUri($args['redirectURL']);
+		$client->setScopes(array(
+		  'https://www.googleapis.com/auth/drive',
+		  'https://www.googleapis.com/auth/userinfo.email',
+		  'https://www.googleapis.com/auth/userinfo.profile'));
+		  
+		//$client->setUseObjects(true);
+		
+		$accessToken = $args['token'];
+		$refreshToken = $accessToken['refresh_token'];
+		
+		try
+		{
+			$client->refreshToken($refreshToken);
+		}
+		catch(Exception $e)
+		{	
+			echo 'google Error ',  $e->getMessage(), "\n";
+			return array("error" => $e->getMessage());
+		}
+		
+		//downloading the file
+		$service = new Google_Service_Drive($client);
+		
+		$file = $service->files->get($args['backup_file']);
+		
+		$downloadUrl = $file->getDownloadUrl();
+		
+		$temp = wp_tempnam('iwp_temp_backup.zip');
+				
+		try
+		{
+			if ($downloadUrl) 
+			{
+				$request = new Google_Http_Request($downloadUrl, 'GET', null, null);
+				
+				$signHttpRequest = $client->getAuth()->sign($request);
+				$httpRequest = $client->getIo()->makeRequest($signHttpRequest);
+				
+				if ($httpRequest->getResponseHttpCode() == 200) {
+					file_put_contents($temp, $httpRequest->getResponseBody());
+					return $temp;
+				} else {
+				  // An error occurred.
+				  return array("error" => "There is some error.");
+				}
+			}
+			else
+			{
+				// The file doesn't have any content stored on Drive.
+				return array("error" => "Google Drive file doesnt have nay content.");
+			}
+		}catch(Exception $e)
+		{	
+			echo 'google Error ',  $e->getMessage(), "\n";
+			return array("error" => $e->getMessage());
+		}
+		
+		
+	}
+	
+	function remove_google_drive_backup($args)
+	{
+		/* require_once($GLOBALS['iwp_mmb_plugin_dir'].'/lib/google-api/Google_Client.php');
+		require_once($GLOBALS['iwp_mmb_plugin_dir'].'/lib/google-api/contrib/Google_DriveService.php'); */
+		require_once($GLOBALS['iwp_mmb_plugin_dir'].'/lib/Google/Client.php');
+		require_once($GLOBALS['iwp_mmb_plugin_dir'].'/lib/Google/Service/Drive.php');
+		
+		$client = new Google_Client();
+		$client->setClientId($args['clientID']);
+		$client->setClientSecret($args['clientSecretKey']);
+		$client->setRedirectUri($args['redirectURL']);
+		$client->setScopes(array(
+		  'https://www.googleapis.com/auth/drive',
+		  'https://www.googleapis.com/auth/userinfo.email',
+		  'https://www.googleapis.com/auth/userinfo.profile'));
+		  
+		//$client->setUseObjects(true);
+		
+		$accessToken = $args['token'];
+		$refreshToken = $accessToken['refresh_token'];
+		
+		try
+		{
+			$client->refreshToken($refreshToken);
+		}
+		catch(Exception $e)
+		{	
+			echo 'google Error ',  $e->getMessage(), "\n";
+			return array("error" => $e->getMessage());
+		}
+		
+		$service = new Google_Service_Drive($client);
+		
+		try
+		{
+			echo "\n".'backup_file:'.$args['backup_file'];
+            $service->files->delete($args['backup_file']);
+		}
+		catch (Exception $e)
+		{
+			echo "\nAn error occurred: " . $e->getMessage();
+			return array("error" => $e->getMessage());
+		}
+		
+	}
     
     function schedule_next($type, $schedule)
     {
@@ -2433,7 +2807,7 @@ function get_next_schedules()
                     @unlink($backups[$task_name]['task_results'][$i]['server']['file_path']);
                 }
    
- if (isset($backups[$task_name]['task_results'][$i]['ftp'])) {
+				if (isset($backups[$task_name]['task_results'][$i]['ftp'])) {
                     $ftp_file            = $backups[$task_name]['task_results'][$i]['ftp'];
                     $args                = $backups[$task_name]['task_args']['account_info']['iwp_ftp'];
                     $args['backup_file'] = $ftp_file;
@@ -2454,6 +2828,13 @@ function get_next_schedules()
                     $args['backup_file'] = $dropbox_file;
                    $this->remove_dropbox_backup($args);
                 }
+				
+				if (isset($backups[$task_name]['task_results'][$i]['gDrive'])) {
+					$gdrive_file       = $backups[$task_name]['task_results'][$i]['gDrive'];
+					$args                = $backups[$task_name]['task_args']['account_info']['iwp_gdrive'];
+					$args['backup_file'] = $gdrive_file;
+					$this->remove_google_drive_backup($args);
+				}
                 //Remove database backup info
                 unset($backups[$task_name]['task_results'][$i]);
                 
@@ -2515,6 +2896,12 @@ function get_next_schedules()
             $this->remove_dropbox_backup($args);
         }
 
+		if (isset($backup['gDrive'])) {
+        	$g_drive_file       = $backup['gDrive'];
+            $args                = $tasks[$task_name]['task_args']['account_info']['iwp_gdrive'];
+            $args['backup_file'] = $g_drive_file;
+            $this->remove_google_drive_backup($args);
+        }
         
         unset($backups[$result_id]);
         

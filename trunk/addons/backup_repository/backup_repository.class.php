@@ -34,7 +34,6 @@ class IWP_MMB_Backup_Repository extends IWP_MMB_Backup
     
 	function backup_repository($args){
 		
-				
         if (!empty($args))
             extract($args);
         
@@ -54,7 +53,6 @@ class IWP_MMB_Backup_Repository extends IWP_MMB_Backup
             $backup_file = $results[count($results) - 1]['server']['file_path'];
         }
 		
-        
         if ($backup_file && file_exists($backup_file)) {
             //FTP, Amazon S3 or Dropbox
             if (isset($account_info['iwp_ftp']) && !empty($account_info)) {
@@ -82,7 +80,50 @@ class IWP_MMB_Backup_Repository extends IWP_MMB_Backup
                 $return                                     = $this->dropbox_backup($account_info['iwp_dropbox']);
                 $this->update_status($task_name, 'dropbox', true);
 				iwp_mmb_print_flush('Dropbox upload: End');
-            }          
+            }
+			
+			if (isset($account_info['iwp_gdrive'])  && !empty($account_info['iwp_gdrive'])) {
+			
+				$this->update_status($task_name,'gDrive');
+				$account_info['iwp_gdrive']['backup_file'] = $backup_file;
+                iwp_mmb_print_flush('google Drive upload: Start');
+				$gdrive_result                              = $this->google_drive_backup($account_info['iwp_gdrive']);
+				$this->update_status($task_name, 'gDrive', true);
+				iwp_mmb_print_flush('google Drive upload: End');
+				
+				if ($gdrive_result == false && $del_host_file) {
+                    @unlink($backup_file);
+					$return = false;
+                }
+                
+                if (is_array($gdrive_result) && isset($gdrive_result['error'])) {
+                    return $gdrive_result;
+                }
+				
+				//update the tasks different method for gDrive
+				
+				if(!empty($gdrive_result))
+				{
+					$tasks = $this->tasks;
+					$task  = $tasks['Backup Now'];
+					$results = $task['task_results'];
+					if (is_array($results) && count($results)) {
+						$results[count($results) - 1]['gDrive'] = $gdrive_result;
+						//$results[count($results) - 1]['gDriveOrgFileName'] = basename($backup_url);  //not required
+						unset($results[count($results) - 1]['server']);
+					}
+					
+					/* $paths['gDrive'] = $gdrive_result;  				//different from other upload ; storing the gDrive backupfile ID in the paths array for delete operation
+					$paths['gDriveOrgFileName'] = basename($backup_url); */
+					
+					$tasks['Backup Now']['task_results'] = $results;
+					$this->tasks = $tasks;
+					
+					$this->update_status($task_name,'gDrive', true);
+					unset($paths['server']);
+					$return  = true;
+				}
+			}
             
             if ($return == true && $del_host_file) {
                 @unlink($backup_file);

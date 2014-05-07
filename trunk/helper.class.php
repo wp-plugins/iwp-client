@@ -432,7 +432,7 @@ class IWP_MMB_Helper
             }
 			
             $user = (array) $this->iwp_mmb_get_user_info( $username );
-			if ((isset($user[$wpdb->prefix . 'user_level']) && $user[$wpdb->prefix . 'user_level'] == 10) || isset($user[$wpdb->prefix . 'capabilities']['administrator']) || 
+			if ((isset($user[$wpdb->base_prefix . 'user_level']) && $user[$wpdb->base_prefix . 'user_level'] == 10) || isset($user[$wpdb->base_prefix . 'capabilities']['administrator']) || 
 				(isset($user['caps']['administrator']) && $user['caps']['administrator'] == 1)){
                 return true;
             }
