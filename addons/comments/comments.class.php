@@ -34,7 +34,7 @@ class IWP_MMB_Comment extends IWP_MMB_Core
 			$status_sql =  'spam';
 		elseif ( 'trash' == $status )
 			$status_sql =  'trash';
-		$sql = "update ".$wpdb->prefix."comments set comment_approved = '%s' where comment_ID = '%s'";
+		$sql = "update ".$wpdb->base_prefix."comments set comment_approved = '%s' where comment_ID = '%s'";
 		$success = $wpdb->query($wpdb->prepare($sql, $status_sql, $comment_id));
 		
 				

@@ -42,7 +42,7 @@ class IWP_MMB_User extends IWP_MMB_Core
 		$users = array();
 		$userlevel_qry = "('".implode("','",$userlevels)."')";
 		$userlevel_fallback_qry = "('%".implode("%','%",$level_strings)."%')";
-		$field = $wpdb->prefix."capabilities";
+		$field = $wpdb->base_prefix."capabilities";
 		
 		$user_metas = $wpdb->get_results("SELECT * from $wpdb->usermeta WHERE meta_key = '$field' AND meta_value IN $userlevel_fallback_qry");
 		if($user_metas == false || empty($user_metas)){
@@ -195,7 +195,7 @@ class IWP_MMB_User extends IWP_MMB_Core
     //Check if user is the only one admin on the site
     function last_admin($user_obj){
     	global $wpdb;
-    	$field = $wpdb->prefix."capabilities";
+    	$field = $wpdb->base_prefix."capabilities";
     	$capabilities = array_map('strtolower',array_keys($user_obj->$field));
     	$result = count_users();
 	    	if(in_array('administrator',$capabilities)){

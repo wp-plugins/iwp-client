@@ -440,7 +440,7 @@ class IWP_MMB_Post extends IWP_MMB_Core
     	$success = false; 
     	
     	if(in_array($status, array('draft', 'publish', 'trash'))){
-			$sql = "update ".$wpdb->prefix."posts set post_status  = '$status' where ID = '$post_id'";
+			$sql = "update ".$wpdb->base_prefix."posts set post_status  = '$status' where ID = '$post_id'";
 			$success = $wpdb->query($sql);
     	}
 
