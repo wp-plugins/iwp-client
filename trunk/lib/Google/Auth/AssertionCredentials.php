@@ -24,7 +24,7 @@ require_once $GLOBALS['iwp_mmb_plugin_dir']."/lib/Google/Utils.php";
  *
  * @author Chirag Shah <chirags@google.com>
  */
-class Google_Auth_AssertionCredentials
+class IWP_google_Auth_AssertionCredentials
 {
   const MAX_TOKEN_LIFETIME_SECS = 3600;
 
@@ -93,7 +93,7 @@ class Google_Auth_AssertionCredentials
     $now = time();
 
     $jwtParams = array(
-          'aud' => Google_Auth_OAuth2::OAUTH2_TOKEN_URI,
+          'aud' => IWP_google_Auth_OAuth2::OAUTH2_TOKEN_URI,
           'scope' => $this->scopes,
           'iat' => $now,
           'exp' => $now + self::MAX_TOKEN_LIFETIME_SECS,
@@ -119,14 +119,14 @@ class Google_Auth_AssertionCredentials
     $header = array('typ' => 'JWT', 'alg' => 'RS256');
 
     $segments = array(
-      Google_Utils::urlSafeB64Encode(json_encode($header)),
-      Google_Utils::urlSafeB64Encode(json_encode($payload))
+      IWP_google_Utils::urlSafeB64Encode(json_encode($header)),
+      IWP_google_Utils::urlSafeB64Encode(json_encode($payload))
     );
 
     $signingInput = implode('.', $segments);
-    $signer = new Google_Signer_P12($this->privateKey, $this->privateKeyPassword);
+    $signer = new IWP_google_Signer_P12($this->privateKey, $this->privateKeyPassword);
     $signature = $signer->sign($signingInput);
-    $segments[] = Google_Utils::urlSafeB64Encode($signature);
+    $segments[] = IWP_google_Utils::urlSafeB64Encode($signature);
 
     return implode(".", $segments);
   }

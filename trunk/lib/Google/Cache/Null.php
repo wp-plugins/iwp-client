@@ -22,9 +22,9 @@ require_once $GLOBALS['iwp_mmb_plugin_dir']."/lib/Google/Cache/Exception.php";
  * A blank storage class, for cases where caching is not
  * required.
  */
-class Google_Cache_Null extends Google_Cache_Abstract
+class IWP_google_Cache_Null extends IWP_google_Cache_Abstract
 {
-  public function __construct(Google_Client $client)
+  public function __construct(IWP_google_Client $client)
   {
 
   }

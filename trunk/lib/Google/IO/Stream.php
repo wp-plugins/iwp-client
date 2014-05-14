@@ -16,14 +16,14 @@
  */
 
 /**
- * Http Streams based implementation of Google_IO.
+ * Http Streams based implementation of IWP_google_IO.
  *
  * @author Stuart Langley <slangley@google.com>
  */
 
 require_once $GLOBALS['iwp_mmb_plugin_dir'].'/lib/Google/IO/Abstract.php';
 
-class Google_IO_Stream extends Google_IO_Abstract
+class IWP_google_IO_Stream extends IWP_google_IO_Abstract
 {
   const TIMEOUT = "timeout";
   const ZLIB = "compress.zlib://";
@@ -41,12 +41,12 @@ class Google_IO_Stream extends Google_IO_Abstract
   /**
    * Execute an HTTP Request
    *
-   * @param Google_HttpRequest $request the http request to be executed
-   * @return Google_HttpRequest http request with the response http code,
+   * @param IWP_google_HttpRequest $request the http request to be executed
+   * @return IWP_google_HttpRequest http request with the response http code,
    * response headers and response body filled in
-   * @throws Google_IO_Exception on curl or IO error
+   * @throws IWP_google_IO_Exception on curl or IO error
    */
-  public function executeRequest(Google_Http_Request $request)
+  public function executeRequest(IWP_google_Http_Request $request)
   {
     $default_options = stream_context_get_options(stream_context_get_default());
 
@@ -115,7 +115,7 @@ class Google_IO_Stream extends Google_IO_Abstract
     }
 
     if (false === $response_data) {
-      throw new Google_IO_Exception(
+      throw new IWP_google_IO_Exception(
           sprintf(
               "HTTP Error: Unable to connect: '%s'",
               $respHttpCode

@@ -26,12 +26,12 @@ require_once $GLOBALS['iwp_mmb_plugin_dir']."/lib/Google/Cache/Exception.php";
  *
  * @author Chris Chabot <chabotc@google.com>
  */
-class Google_Cache_Apc extends Google_Cache_Abstract
+class IWP_google_Cache_Apc extends IWP_google_Cache_Abstract
 {
-  public function __construct(Google_Client $client)
+  public function __construct(IWP_google_Client $client)
   {
     if (! function_exists('apc_add') ) {
-      throw new Google_Cache_Exception("Apc functions not available");
+      throw new IWP_google_Cache_Exception("Apc functions not available");
     }
   }
 
@@ -58,7 +58,7 @@ class Google_Cache_Apc extends Google_Cache_Abstract
   {
     $rc = apc_store($key, array('time' => time(), 'data' => $value));
     if ($rc == false) {
-      throw new Google_Cache_Exception("Couldn't store data");
+      throw new IWP_google_Cache_Exception("Couldn't store data");
     }
   }
 

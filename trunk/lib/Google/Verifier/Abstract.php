@@ -20,7 +20,7 @@
  *
  * @author Brian Eaton <beaton@google.com>
  */
-abstract class Google_Verifier_Abstract
+abstract class IWP_google_Verifier_Abstract
 {
   /**
    * Checks a signature, returns true if the signature is correct,
