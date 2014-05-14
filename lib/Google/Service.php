@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-class Google_Service
+class IWP_google_Service
 {
   public $version;
   public $servicePath;
@@ -23,14 +23,14 @@ class Google_Service
   public $resource;
   private $client;
 
-  public function __construct(Google_Client $client)
+  public function __construct(IWP_google_Client $client)
   {
     $this->client = $client;
   }
 
   /**
-   * Return the associated Google_Client class.
-   * @return Google_Client
+   * Return the associated IWP_google_Client class.
+   * @return IWP_google_Client
    */
   public function getClient()
   {

@@ -34,27 +34,27 @@ require_once $GLOBALS['iwp_mmb_plugin_dir'].'/lib/Google/Service/Resource.php';
  * @author Chris Chabot <chabotc@google.com>
  * @author Chirag Shah <chirags@google.com>
  */
-class Google_Client
+class IWP_google_Client
 {
   const LIBVER = "1.0.5-beta";
   const USER_AGENT_SUFFIX = "google-api-php-client/";
   /**
-   * @var Google_Auth_Abstract $auth
+   * @var IWP_google_Auth_Abstract $auth
    */
   private $auth;
 
   /**
-   * @var Google_IO_Abstract $io
+   * @var IWP_google_IO_Abstract $io
    */
   private $io;
 
   /**
-   * @var Google_Cache_Abstract $cache
+   * @var IWP_google_Cache_Abstract $cache
    */
   private $cache;
 
   /**
-   * @var Google_Config $config
+   * @var IWP_google_Config $config
    */
   private $config;
 
@@ -76,7 +76,7 @@ class Google_Client
   /**
    * Construct the Google Client.
    *
-   * @param $config Google_Config or string for the ini file to load
+   * @param $config IWP_google_Config or string for the ini file to load
    */
   public function __construct($config = null)
   {
@@ -86,26 +86,26 @@ class Google_Client
     }
 
     if (is_string($config) && strlen($config)) {
-      $config = new Google_Config($config);
-    } else if ( !($config instanceof Google_Config)) {
-      $config = new Google_Config();
+      $config = new IWP_google_Config($config);
+    } else if ( !($config instanceof IWP_google_Config)) {
+      $config = new IWP_google_Config();
 
       if ($this->isAppEngine()) {
         // Automatically use Memcache if we're in AppEngine.
-        $config->setCacheClass('Google_Cache_Memcache');
+        $config->setCacheClass('IWP_google_Cache_Memcache');
       }
 
       if (version_compare(phpversion(), "5.3.4", "<=") || $this->isAppEngine()) {
         // Automatically disable compress.zlib, as currently unsupported.
-        $config->setClassConfig('Google_Http_Request', 'disable_gzip', true);
+        $config->setClassConfig('IWP_google_Http_Request', 'disable_gzip', true);
       }
     }
     
-    if ($config->getIoClass() == Google_Config::USE_AUTO_IO_SELECTION) {
+    if ($config->getIoClass() == IWP_google_Config::USE_AUTO_IO_SELECTION) {
       if (function_exists('curl_version') && function_exists('curl_exec')) {
-        $config->setIoClass("Google_Io_Curl");
+        $config->setIoClass("IWP_google_Io_Curl");
       } else {
-        $config->setIoClass("Google_Io_Stream");
+        $config->setIoClass("IWP_google_Io_Stream");
       }
     }
 
@@ -147,7 +147,7 @@ class Google_Client
     $data = json_decode($json);
     $key = isset($data->installed) ? 'installed' : 'web';
     if (!isset($data->$key)) {
-      throw new Google_Exception("Invalid client secret JSON file.");
+      throw new IWP_google_Exception("Invalid client secret JSON file.");
     }
     $this->setClientId($data->$key->client_id);
     $this->setClientSecret($data->$key->client_secret);
@@ -175,7 +175,7 @@ class Google_Client
   public function prepareScopes()
   {
     if (empty($this->requestedScopes)) {
-      throw new Google_Auth_Exception("No scopes specified");
+      throw new IWP_google_Auth_Exception("No scopes specified");
     }
     $scopes = implode(' ', $this->requestedScopes);
     return $scopes;
@@ -183,7 +183,7 @@ class Google_Client
 
   /**
    * Set the OAuth 2.0 access token using the string that resulted from calling createAuthUrl()
-   * or Google_Client#getAccessToken().
+   * or IWP_google_Client#getAccessToken().
    * @param string $accessToken JSON encoded string containing in the following format:
    * {"access_token":"TOKEN", "refresh_token":"TOKEN", "token_type":"Bearer",
    *  "expires_in":3600, "id_token":"TOKEN", "created":1320790426}
@@ -200,9 +200,9 @@ class Google_Client
 
   /**
    * Set the authenticator object
-   * @param Google_Auth_Abstract $auth
+   * @param IWP_google_Auth_Abstract $auth
    */
-  public function setAuth(Google_Auth_Abstract $auth)
+  public function setAuth(IWP_google_Auth_Abstract $auth)
   {
     $this->config->setAuthClass(get_class($auth));
     $this->auth = $auth;
@@ -210,9 +210,9 @@ class Google_Client
 
   /**
    * Set the IO object
-   * @param Google_Io_Abstract $auth
+   * @param IWP_google_Io_Abstract $auth
    */
-  public function setIo(Google_Io_Abstract $io)
+  public function setIo(IWP_google_Io_Abstract $io)
   {
     $this->config->setIoClass(get_class($io));
     $this->io = $io;
@@ -220,9 +220,9 @@ class Google_Client
 
   /**
    * Set the Cache object
-   * @param Google_Cache_Abstract $auth
+   * @param IWP_google_Cache_Abstract $auth
    */
-  public function setCache(Google_Cache_Abstract $cache)
+  public function setCache(IWP_google_Cache_Abstract $cache)
   {
     $this->config->setCacheClass(get_class($cache));
     $this->cache = $cache;
@@ -367,7 +367,7 @@ class Google_Client
   /**
    * Revoke an OAuth2 access token or refresh token. This method will revoke the current access
    * token, if a token isn't provided.
-   * @throws Google_Auth_Exception
+   * @throws IWP_google_Auth_Exception
    * @param string|null $token The token (access token or a refresh token) that should be revoked.
    * @return boolean Returns True if the revocation was successful, otherwise False.
    */
@@ -379,9 +379,9 @@ class Google_Client
   /**
    * Verify an id_token. This method will verify the current id_token, if one
    * isn't provided.
-   * @throws Google_Auth_Exception
+   * @throws IWP_google_Auth_Exception
    * @param string|null $token The token (id_token) that should be verified.
-   * @return Google_Auth_LoginTicket Returns an apiLoginTicket if the verification was
+   * @return IWP_google_Auth_LoginTicket Returns an apiLoginTicket if the verification was
    * successful.
    */
   public function verifyIdToken($token = null)
@@ -401,16 +401,16 @@ class Google_Client
    */
   public function verifySignedJwt($id_token, $cert_location, $audience, $issuer, $max_expiry = null)
   {
-    $auth = new Google_Auth_OAuth2($this);
+    $auth = new IWP_google_Auth_OAuth2($this);
     $certs = $auth->retrieveCertsFromLocation($cert_location);
     return $auth->verifySignedJwtWithCerts($id_token, $certs, $audience, $issuer, $max_expiry);
   }
 
   /**
-   * @param Google_Auth_AssertionCredentials $creds
+   * @param IWP_google_Auth_AssertionCredentials $creds
    * @return void
    */
-  public function setAssertionCredentials(Google_Auth_AssertionCredentials $creds)
+  public function setAssertionCredentials(IWP_google_Auth_AssertionCredentials $creds)
   {
     $this->getAuth()->setAssertionCredentials($creds);
   }
@@ -486,21 +486,21 @@ class Google_Client
    */
   public function execute($request)
   {
-    if ($request instanceof Google_Http_Request) {
+    if ($request instanceof IWP_google_Http_Request) {
       $request->setUserAgent(
           $this->getApplicationName()
           . " " . self::USER_AGENT_SUFFIX
           . $this->getLibraryVersion()
       );
-      if (!$this->getClassConfig("Google_Http_Request", "disable_gzip")) {
+      if (!$this->getClassConfig("IWP_google_Http_Request", "disable_gzip")) {
         $request->enableGzip();
       }
       $request->maybeMoveParametersToBody();
-      return Google_Http_REST::execute($this, $request);
-    } else if ($request instanceof Google_Http_Batch) {
+      return IWP_google_Http_REST::execute($this, $request);
+    } else if ($request instanceof IWP_google_Http_Batch) {
       return $request->execute();
     } else {
-      throw new Google_Exception("Do not know how to execute this type of object.");
+      throw new IWP_google_Exception("Do not know how to execute this type of object.");
     }
   }
 
@@ -514,7 +514,7 @@ class Google_Client
   }
 
   /**
-   * @return Google_Auth_Abstract Authentication implementation
+   * @return IWP_google_Auth_Abstract Authentication implementation
    */
   public function getAuth()
   {
@@ -526,7 +526,7 @@ class Google_Client
   }
 
   /**
-   * @return Google_IO_Abstract IO implementation
+   * @return IWP_google_IO_Abstract IO implementation
    */
   public function getIo()
   {
@@ -538,7 +538,7 @@ class Google_Client
   }
 
   /**
-   * @return Google_Cache_Abstract Cache implementation
+   * @return IWP_google_Cache_Abstract Cache implementation
    */
   public function getCache()
   {
@@ -564,7 +564,7 @@ class Google_Client
 
   /**
    * Set configuration specific to a given class.
-   * $config->setClassConfig('Google_Cache_File',
+   * $config->setClassConfig('IWP_google_Cache_File',
    *   array('directory' => '/tmp/cache'));
    * @param $class The class name for the configuration
    * @param $config string key or an array of configuration values

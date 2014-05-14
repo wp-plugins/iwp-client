@@ -2307,7 +2307,7 @@ function ftp_backup($args)
 		$fileSizeUploaded = 0;
 		$resumeURI = false;
 		
-		$client = new Google_Client();
+		$client = new IWP_google_Client();
 		$client->setClientId($args['clientID']);
 		$client->setClientSecret($args['clientSecretKey']);
 		$client->setRedirectUri($args['redirectURL']);
@@ -2331,7 +2331,7 @@ function ftp_backup($args)
 			return array("error" => $e->getMessage());
 		}
 		
-		$service = new Google_Service_Drive($client);
+		$service = new IWP_google_Service_Drive($client);
 		
 		//create folder if not present
 		try 
@@ -2345,7 +2345,7 @@ function ftp_backup($args)
 			
 			if(empty($list_result))
 			{
-				$file = new Google_Service_Drive_DriveFile();
+				$file = new IWP_google_Service_Drive_DriveFile();
 				$file->setTitle('infinitewp');
 				$file->setMimeType('application/vnd.google-apps.folder');
 				
@@ -2380,12 +2380,12 @@ function ftp_backup($args)
 			
 			if(empty($list_result))
 			{
-				$file = new Google_Service_Drive_DriveFile();
+				$file = new IWP_google_Service_Drive_DriveFile();
 				$file->setTitle($sub_folder_name);
 				$file->setMimeType('application/vnd.google-apps.folder');
 				
 				//setting parent as infinitewpFolder
-				$parent = new Google_Service_Drive_ParentReference();
+				$parent = new IWP_google_Service_Drive_ParentReference();
 				$parent->setId($iwp_folder_id);
 				$file->setParents(array($parent));
 				
@@ -2407,12 +2407,12 @@ function ftp_backup($args)
 		
 		
 		//Insert a file
-		$file = new Google_Service_Drive_DriveFile();
+		$file = new IWP_google_Service_Drive_DriveFile();
 		$file->setTitle(basename($backup_file));
 		$file->setMimeType('binary/octet-stream');
 		
 		// Set the Parent Folder on Google Drive
-		$parent = new Google_Service_Drive_ParentReference();
+		$parent = new IWP_google_Service_Drive_ParentReference();
 		if(empty($sub_folder_id))
 		{
 			$parent->setId($iwp_folder_id);
@@ -2446,7 +2446,7 @@ function ftp_backup($args)
 				$request = $service->files->insert($file);
 				
 				// Create a media file upload to represent our upload process.
-				$media = new Google_Http_MediaFileUpload($client, $request, 'application/zip', null, true, $upload_file_block_size);
+				$media = new IWP_google_Http_MediaFileUpload($client, $request, 'application/zip', null, true, $upload_file_block_size);
 				$media->setFileSize(filesize($backup_file));
 				
 				$status = false;
@@ -2546,7 +2546,7 @@ function ftp_backup($args)
 		require_once($GLOBALS['iwp_mmb_plugin_dir'].'/lib/Google/Service/Drive.php');
 		
 		//refresh token 
-		$client = new Google_Client();
+		$client = new IWP_google_Client();
 		$client->setClientId($args['clientID']);
 		$client->setClientSecret($args['clientSecretKey']);
 		$client->setRedirectUri($args['redirectURL']);
@@ -2571,7 +2571,7 @@ function ftp_backup($args)
 		}
 		
 		//downloading the file
-		$service = new Google_Service_Drive($client);
+		$service = new IWP_google_Service_Drive($client);
 		
 		$file = $service->files->get($args['backup_file']);
 		
@@ -2583,7 +2583,7 @@ function ftp_backup($args)
 		{
 			if ($downloadUrl) 
 			{
-				$request = new Google_Http_Request($downloadUrl, 'GET', null, null);
+				$request = new IWP_google_Http_Request($downloadUrl, 'GET', null, null);
 				
 				$signHttpRequest = $client->getAuth()->sign($request);
 				$httpRequest = $client->getIo()->makeRequest($signHttpRequest);
@@ -2617,7 +2617,7 @@ function ftp_backup($args)
 		require_once($GLOBALS['iwp_mmb_plugin_dir'].'/lib/Google/Client.php');
 		require_once($GLOBALS['iwp_mmb_plugin_dir'].'/lib/Google/Service/Drive.php');
 		
-		$client = new Google_Client();
+		$client = new IWP_google_Client();
 		$client->setClientId($args['clientID']);
 		$client->setClientSecret($args['clientSecretKey']);
 		$client->setRedirectUri($args['redirectURL']);
@@ -2641,7 +2641,7 @@ function ftp_backup($args)
 			return array("error" => $e->getMessage());
 		}
 		
-		$service = new Google_Service_Drive($client);
+		$service = new IWP_google_Service_Drive($client);
 		
 		try
 		{

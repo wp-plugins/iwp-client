@@ -15,6 +15,6 @@
  * limitations under the License.
  */
 
-class Google_Exception extends Exception
+class IWP_google_Exception extends Exception
 {
 }

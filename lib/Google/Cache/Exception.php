@@ -16,6 +16,6 @@
  */
 require_once $GLOBALS['iwp_mmb_plugin_dir']."/lib/Google/Exception.php";
 
-class Google_Cache_Exception extends Google_Exception
+class IWP_google_Cache_Exception extends IWP_google_Exception
 {
 }

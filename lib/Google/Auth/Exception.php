@@ -17,6 +17,6 @@
 
 require_once $GLOBALS['iwp_mmb_plugin_dir']."/lib/Google/Exception.php";
 
-class Google_Auth_Exception extends Google_Exception
+class IWP_google_Auth_Exception extends IWP_google_Exception
 {
 }

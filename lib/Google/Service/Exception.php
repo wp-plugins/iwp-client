@@ -2,7 +2,7 @@
 
 require_once $GLOBALS['iwp_mmb_plugin_dir'].'/lib/Google/Exception.php';
 
-class Google_Service_Exception extends Google_Exception
+class IWP_google_Service_Exception extends IWP_google_Exception
 {
   /**
    * Optional list of errors returned in a JSON body of an HTTP error response.

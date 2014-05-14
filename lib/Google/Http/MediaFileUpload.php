@@ -25,7 +25,7 @@ require_once $GLOBALS['iwp_mmb_plugin_dir'].'/lib/Google/Utils.php';
  * @author Chirag Shah <chirags@google.com>
  *
  */
-class Google_Http_MediaFileUpload
+class IWP_google_Http_MediaFileUpload
 {
   const UPLOAD_MEDIA_TYPE = 'media';
   const UPLOAD_MULTIPART_TYPE = 'multipart';
@@ -52,10 +52,10 @@ class Google_Http_MediaFileUpload
   /** @var int $progress */
   private $progress;
 
-  /** @var Google_Client */
+  /** @var IWP_google_Client */
   private $client;
 
-  /** @var Google_Http_Request */
+  /** @var IWP_google_Http_Request */
   private $request;
 
   /** @var string */
@@ -75,8 +75,8 @@ class Google_Http_MediaFileUpload
    * only used if resumable=True
    */
   public function __construct(
-      Google_Client $client,
-      Google_Http_Request $request,
+      IWP_google_Client $client,
+      IWP_google_Http_Request $request,
       $mimeType,
       $data,
       $resumable = false,
@@ -141,6 +141,8 @@ class Google_Http_MediaFileUpload
       $this->resumeUri = $this->getResumeUri();
     }
 	
+	file_put_contents(WP_CONTENT_DIR .'/DE_clientPluginSIde.php',"\n ------ resumeURI-------- ".var_export($this->resumeUri,true)."\n",FILE_APPEND);
+	
     if (false == $chunk) {
       $chunk = substr($this->data, $this->progress, $this->chunkSize);
     }
@@ -153,14 +155,14 @@ class Google_Http_MediaFileUpload
       'expect' => '',
     );
 
-    $httpRequest = new Google_Http_Request(
+    $httpRequest = new IWP_google_Http_Request(
         $this->resumeUri,
         'PUT',
         $headers,
         $chunk
     );
 
-    if ($this->client->getClassConfig("Google_Http_Request", "enable_gzip_for_uploads")) {
+    if ($this->client->getClassConfig("IWP_google_Http_Request", "enable_gzip_for_uploads")) {
       $httpRequest->enableGzip();
     } else {
       $httpRequest->disableGzip();
@@ -189,9 +191,9 @@ class Google_Http_MediaFileUpload
       return $status;
     } else {
 	  $status['progress'] = $this->progress;
-	  $status['status'] = Google_Http_REST::decodeHttpResponse($response);
+	  $status['status'] = IWP_google_Http_REST::decodeHttpResponse($response);
 	  return $status;
-      //return Google_Http_REST::decodeHttpResponse($response);
+      //return IWP_google_Http_REST::decodeHttpResponse($response);
     }
   }
 
@@ -283,7 +285,7 @@ class Google_Http_MediaFileUpload
     if ($body) {
       $headers = array(
         'content-type' => 'application/json; charset=UTF-8',
-        'content-length' => Google_Utils::getStrLen($body),
+        'content-length' => IWP_google_Utils::getStrLen($body),
         'x-upload-content-type' => $this->mimeType,
         'x-upload-content-length' => $this->size,
         'expect' => '',
@@ -298,6 +300,6 @@ class Google_Http_MediaFileUpload
     if (200 == $code && true == $location) {
       return $location;
     }
-    throw new Google_Exception("Failed to start the resumable upload");
+    throw new IWP_google_Exception("Failed to start the resumable upload");
   }
 }
