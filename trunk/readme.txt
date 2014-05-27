@@ -48,6 +48,9 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog ==
 
+= 1.2.14 =
+* Improvement: SQL dump taken via mysqldump made compatible for clone.
+
 = 1.2.13 =
 * Fix: Google library conflict issues are fixed.
 
