@@ -48,6 +48,10 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog ==
 
+= 1.2.15 =
+* Improvement: Support for backup upload to SFTP repository
+* Fix: Bug fixes
+
 = 1.2.14 =
 * Improvement: SQL dump taken via mysqldump made compatible for clone.
 

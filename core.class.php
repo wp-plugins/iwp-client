@@ -761,12 +761,12 @@ class IWP_MMB_Core extends IWP_MMB_Helper
 				wp_set_auth_cookie($user->ID);
 				@iwp_mmb_client_header();
 				
-				if((isset($this->iwp_mmb_multisite) && $this->iwp_mmb_multisite ) || isset($_REQUEST['iwpredirect'])){
+				//if((isset($this->iwp_mmb_multisite) && $this->iwp_mmb_multisite ) || isset($_REQUEST['iwpredirect'])){//comment makes force redirect, which fix bug https dashboard
 					if(function_exists('wp_safe_redirect') && function_exists('admin_url')){
 						wp_safe_redirect(admin_url($where));
 						exit();
 					}
-				}
+				//}
 			} else {
                 wp_die($auth['error']);
             }

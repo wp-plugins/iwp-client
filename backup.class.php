@@ -386,7 +386,10 @@ function delete_task_now($task_name){
                 $disable_comp = $this->tasks[$task_name]['task_args']['disable_comp'];
                 
                 if($fail_safe_files){
-	                $this->fail_safe_pcl_db($backup_file,$fail_safe_files,$disable_comp);
+	                $pcl_result = $this->fail_safe_pcl_db($backup_file,$fail_safe_files,$disable_comp);
+					if(is_array($pcl_result) && isset($pcl_result['error'])){
+						return $pcl_result;
+					}
                 }
                 else{
                 $comp_level   = $disable_comp ? '-0' : '-1';
@@ -397,6 +400,7 @@ function delete_task_now($task_name){
                 ob_start();
                 $result = $this->iwp_mmb_exec($command);
                 ob_get_clean();
+				iwp_mmb_print_flush('DB ZIP CMD Result: '.$result);
 				iwp_mmb_print_flush('DB ZIP CMD: End');
 				/*zip_backup_db */
 				if(!$result){
@@ -409,7 +413,10 @@ function delete_task_now($task_name){
 					}
 					
 					if (!$zip_archive_db_result) {
-							$this->fail_safe_pcl_db($backup_file,$fail_safe_files,$disable_comp);
+							$pcl_result = $this->fail_safe_pcl_db($backup_file,$fail_safe_files,$disable_comp);
+							if(is_array($pcl_result) && isset($pcl_result['error'])){
+								return $pcl_result;
+							}
 						}
 					}
 				}
@@ -619,7 +626,10 @@ function delete_task_now($task_name){
         $disable_comp = $this->tasks[$task_name]['task_args']['disable_comp'];
         
         if($fail_safe_files){
-	        $this->fail_safe_pcl_db($backup_file,$fail_safe_files,$disable_comp);
+	        $pcl_result = $this->fail_safe_pcl_db($backup_file,$fail_safe_files,$disable_comp);
+			if(is_array($pcl_result) && isset($pcl_result['error'])){
+				return $pcl_result;
+			}
         }
         else{
         $comp_level   = $disable_comp ? '-0' : '-1';
@@ -631,6 +641,7 @@ function delete_task_now($task_name){
         ob_start();
         $result = $this->iwp_mmb_exec($command);
         ob_get_clean();
+		iwp_mmb_print_flush('DB ZIP CMD Result: '.$result);
 		iwp_mmb_print_flush('DB ZIP CMD: End');
         /*zip_backup_db*/
 		
@@ -644,7 +655,10 @@ function delete_task_now($task_name){
 			}
 		
 			if (!$zip_archive_db_result) {
-					$this->fail_safe_pcl_db($backup_file,$fail_safe_files,$disable_comp);
+					$pcl_result = $this->fail_safe_pcl_db($backup_file,$fail_safe_files,$disable_comp);
+					if(is_array($pcl_result) && isset($pcl_result['error'])){
+						return $pcl_result;
+					}
 				}
 				}
 				}
@@ -741,7 +755,10 @@ function delete_task_now($task_name){
         chdir(ABSPATH);
 		
 		if($fail_safe_files){
-			$this->fail_safe_pcl_files($task_name, $backup_file, $exclude, $include, $fail_safe_files, $disable_comp, $add, $remove);
+			$pcl_result = $this->fail_safe_pcl_files($task_name, $backup_file, $exclude, $include, $fail_safe_files, $disable_comp, $add, $remove);
+			if(is_array($pcl_result) && isset($pcl_result['error'])){
+				return $pcl_result;
+			}
 		}
 		else{
 		$do_cmd_zip_alternative = false;
@@ -800,7 +817,10 @@ function delete_task_now($task_name){
 		
 		
 				if (!$zip_archive_result) {
-					$this->fail_safe_pcl_files($task_name, $backup_file, $exclude, $include, $fail_safe_files, $disable_comp, $add, $remove);
+					$pcl_result = $this->fail_safe_pcl_files($task_name, $backup_file, $exclude, $include, $fail_safe_files, $disable_comp, $add, $remove);
+					if(is_array($pcl_result) && isset($pcl_result['error'])){
+						return $pcl_result;
+					}
 				}
 	        }
 	     }
@@ -2000,73 +2020,141 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
         
         return $reqs;
     }
+/*
+ * SFTP custom function start here
+ */
+
+    function iwp_sftp_mkdir($sftOpj,$dirStr) {
+        
+        $dirs = explode('/', preg_replace('#/(?=/)|/$#', '', $dirStr));
+            if (empty($dirs[0])) {
+                array_shift($dirs);
+                $dirs[0] = '/' . $dirs[0];
+            }
+            foreach($dirs as $dirlist) {
+                if (!empty($dirlist)) {
+                    $sftOpj->mkdir($dirlist,'07777',true);
+                    $sftOpj->chdir($dirlist);
+                }
+            }
+    }
+    
+/*
+ * SFTP custom function end here
+ */
         
 function ftp_backup($args)
     {
         extract($args);
         //Args: $ftp_username, $ftp_password, $ftp_hostname, $backup_file, $ftp_remote_folder, $ftp_site_folder
-        $port = $ftp_port ? $ftp_port : 21; //default port is 21
-        if ($ftp_ssl) {
-            if (function_exists('ftp_ssl_connect')) {
-                $conn_id = ftp_ssl_connect($ftp_hostname,$port);
-                if ($conn_id === false) {
-                	return array(
-                			'error' => 'Failed to connect to ' . $ftp_hostname,
-                			'partial' => 1
-                	);
-                }
-            } else {
+        
+        if(isset($use_sftp) && $use_sftp==1) {
+            $port = $ftp_port ? $ftp_port : 22; //default port is 22
+            /*
+             * SFTP section start here phpseclib library is used for this functionality
+             */
+            $iwp_mmb_plugin_dir = WP_PLUGIN_DIR . '/' . basename(dirname(__FILE__));
+            $path = $iwp_mmb_plugin_dir.'/lib/phpseclib';
+            set_include_path(get_include_path() . PATH_SEPARATOR . $path);
+            include_once('Net/SFTP.php');
+            
+           
+            $sftp = new Net_SFTP($ftp_hostname, $port);
+            if(!$sftp) {
                 return array(
-                    'error' => 'Your server doesn\'t support FTP SSL',
-                    'partial' => 1
-                );
+                                            'error' => 'Failed to connect to ' . $ftp_hostname,
+                                            'partial' => 1
+                            );
             }
-        } else {
-            if (function_exists('ftp_connect')) {
-                $conn_id = ftp_connect($ftp_hostname,$port);
-                if ($conn_id === false) {
+            if (!$sftp->login($ftp_username, $ftp_password)) {
+                return array(
+                                            'error' => 'FTP login failed for ' . $ftp_username . ', ' . $ftp_password,
+                                            'partial' => 1
+                            );
+            } else {
+                if ($ftp_site_folder) {
+                    $ftp_remote_folder .= '/' . $this->site_name;
+                }
+                $remote_loation = basename($backup_file);
+                $local_location = $backup_file;
+                $sftp->mkdir($ftp_remote_folder,-1,true);
+                $sftp->chdir($ftp_remote_folder);
+                //$this->iwp_sftp_mkdir($sftp,'sftpbackup/test123/test1/test2');
+                $upload = $sftp->put(basename($backup_file), $backup_file, NET_SFTP_LOCAL_FILE);
+                
+                if ($upload === false) {
                     return array(
-                        'error' => 'Failed to connect to ' . $ftp_hostname,
+                        'error' => 'Failed to upload file to FTP. Please check your specified path.',
+                        'partial' => 1
+                    );
+                }
+                //SFTP library has automatic connection closed. So no need to call seperate connection close function
+            }
+            
+        } else {
+            $port = $ftp_port ? $ftp_port : 21; //default port is 21
+            if ($ftp_ssl) {
+                if (function_exists('ftp_ssl_connect')) {
+                    $conn_id = ftp_ssl_connect($ftp_hostname,$port);
+                    if ($conn_id === false) {
+                            return array(
+                                            'error' => 'Failed to connect to ' . $ftp_hostname,
+                                            'partial' => 1
+                            );
+                    }
+                } else {
+                    return array(
+                        'error' => 'Your server doesn\'t support FTP SSL',
                         'partial' => 1
                     );
                 }
             } else {
+                if (function_exists('ftp_connect')) {
+                    $conn_id = ftp_connect($ftp_hostname,$port);
+                    if ($conn_id === false) {
+                        return array(
+                            'error' => 'Failed to connect to ' . $ftp_hostname,
+                            'partial' => 1
+                        );
+                    }
+                } else {
+                    return array(
+                        'error' => 'Your server doesn\'t support FTP',
+                        'partial' => 1
+                    );
+                }
+            }
+            $login = @ftp_login($conn_id, $ftp_username, $ftp_password);
+            if ($login === false) {
                 return array(
-                    'error' => 'Your server doesn\'t support FTP',
+                    'error' => 'FTP login failed for ' . $ftp_username . ', ' . $ftp_password,
                     'partial' => 1
                 );
             }
-        }
-        $login = @ftp_login($conn_id, $ftp_username, $ftp_password);
-        if ($login === false) {
-            return array(
-                'error' => 'FTP login failed for ' . $ftp_username . ', ' . $ftp_password,
-                'partial' => 1
-            );
-        }
-        
-        if($ftp_passive){
-					@ftp_pasv($conn_id,true);
-				}
-				
-        @ftp_mkdir($conn_id, $ftp_remote_folder);
-        if ($ftp_site_folder) {
-            $ftp_remote_folder .= '/' . $this->site_name;
-        }
-        @ftp_mkdir($conn_id, $ftp_remote_folder);
-        
-        $upload = @ftp_put($conn_id, $ftp_remote_folder . '/' . basename($backup_file), $backup_file, FTP_BINARY);
-        
-        if ($upload === false) { //Try ascii
-            $upload = @ftp_put($conn_id, $ftp_remote_folder . '/' . basename($backup_file), $backup_file, FTP_ASCII);
-        }
-        @ftp_close($conn_id);
-        
-        if ($upload === false) {
-            return array(
-                'error' => 'Failed to upload file to FTP. Please check your specified path.',
-                'partial' => 1
-            );
+
+            if($ftp_passive){
+                                            @ftp_pasv($conn_id,true);
+                                    }
+
+            @ftp_mkdir($conn_id, $ftp_remote_folder);
+            if ($ftp_site_folder) {
+                $ftp_remote_folder .= '/' . $this->site_name;
+            }
+            @ftp_mkdir($conn_id, $ftp_remote_folder);
+
+            $upload = @ftp_put($conn_id, $ftp_remote_folder . '/' . basename($backup_file), $backup_file, FTP_BINARY);
+
+            if ($upload === false) { //Try ascii
+                $upload = @ftp_put($conn_id, $ftp_remote_folder . '/' . basename($backup_file), $backup_file, FTP_ASCII);
+            }
+            @ftp_close($conn_id);
+
+            if ($upload === false) {
+                return array(
+                    'error' => 'Failed to upload file to FTP. Please check your specified path.',
+                    'partial' => 1
+                );
+            }
         }
         
         return true;
@@ -2076,66 +2164,155 @@ function ftp_backup($args)
     {
         extract($args);
         //Args: $ftp_username, $ftp_password, $ftp_hostname, $backup_file, $ftp_remote_folder
-        $port = $ftp_port ? $ftp_port : 21; //default port is 21
-        if ($ftp_ssl && function_exists('ftp_ssl_connect')) {
-            $conn_id = ftp_ssl_connect($ftp_hostname,$port);
-        } else if (function_exists('ftp_connect')) {
-            $conn_id = ftp_connect($ftp_hostname,$port);
-        }
         
-        if ($conn_id) {
-            $login = @ftp_login($conn_id, $ftp_username, $ftp_password);
-            if ($ftp_site_folder)
-                $ftp_remote_folder .= '/' . $this->site_name;
-            
-            if($ftp_passive){
-							@ftp_pasv($conn_id,true);
-						}
-						
-            $delete = ftp_delete($conn_id, $ftp_remote_folder . '/' . $backup_file);
-            
-            ftp_close($conn_id);
-        }
         
+        if(isset($use_sftp) && $use_sftp==1) {
+            $port = $ftp_port ? $ftp_port : 22; //default port is 22
+            /*
+             * SFTP section start here phpseclib library is used for this functionality
+             */
+            $iwp_mmb_plugin_dir = WP_PLUGIN_DIR . '/' . basename(dirname(__FILE__));
+            $path = $iwp_mmb_plugin_dir.'/lib/phpseclib';
+            set_include_path(get_include_path() . PATH_SEPARATOR . $path);
+            include_once('Net/SFTP.php');
+            
+            
+            $sftp = new Net_SFTP($ftp_hostname,$port);
+            if(!$sftp) {
+                return array(
+                                            'error' => 'Failed to connect to ' . $ftp_hostname,
+                                            'partial' => 1
+                            );
+            }
+            if (!$sftp->login($ftp_username, $ftp_password)) {
+                return array(
+                                            'error' => 'FTP login failed for ' . $ftp_username . ', ' . $ftp_password,
+                                            'partial' => 1
+                            );
+            } else {
+                if ($ftp_site_folder) {
+                    $ftp_remote_folder .= '/' . $this->site_name;
+                }
+                $remote_loation = basename($backup_file);
+                $local_location = $backup_file;
+                
+                $sftp->chdir($ftp_remote_folder);
+                $sftp->delete(basename($backup_file));
+
+            }
+            //SFTP library has automatic connection closed. So no need to call seperate connection close function
+            
+        } else {
+            $port = $ftp_port ? $ftp_port : 21; //default port is 21
+            if ($ftp_ssl && function_exists('ftp_ssl_connect')) {
+                $conn_id = ftp_ssl_connect($ftp_hostname,$port);
+            } else if (function_exists('ftp_connect')) {
+                $conn_id = ftp_connect($ftp_hostname,$port);
+            }
+
+            if ($conn_id) {
+                $login = @ftp_login($conn_id, $ftp_username, $ftp_password);
+                if ($ftp_site_folder)
+                    $ftp_remote_folder .= '/' . $this->site_name;
+
+                if($ftp_passive){
+                                                            @ftp_pasv($conn_id,true);
+                                                    }
+
+                $delete = ftp_delete($conn_id, $ftp_remote_folder . '/' . $backup_file);
+
+                ftp_close($conn_id);
+            }
+        }
     }
     
     function get_ftp_backup($args)
     {
         extract($args);
         //Args: $ftp_username, $ftp_password, $ftp_hostname, $backup_file, $ftp_remote_folder
-        $port = $ftp_port ? $ftp_port : 21; //default port is 21
-        if ($ftp_ssl && function_exists('ftp_ssl_connect')) {
-            $conn_id = ftp_ssl_connect($ftp_hostname,$port);
+        
+        
+        if(isset($use_sftp) && $use_sftp==1) {
+            $port = $ftp_port ? $ftp_port : 22; //default port is 22
+            /*
+             * SFTP section start here phpseclib library is used for this functionality
+             */
+            $iwp_mmb_plugin_dir = WP_PLUGIN_DIR . '/' . basename(dirname(__FILE__));
+            $path = $iwp_mmb_plugin_dir.'/lib/phpseclib';
+            set_include_path(get_include_path() . PATH_SEPARATOR . $path);
+            include_once('Net/SFTP.php');
             
-        } else if (function_exists('ftp_connect')) {
-            $conn_id = ftp_connect($ftp_hostname,$port);
-            if ($conn_id === false) {
+            
+            $sftp = new Net_SFTP($ftp_hostname,$port);
+            if(!$sftp) {
+                return array(
+                                            'error' => 'Failed to connect to ' . $ftp_hostname,
+                                            'partial' => 1
+                            );
+            }
+            if (!$sftp->login($ftp_username, $ftp_password)) {
+                return array(
+                                            'error' => 'FTP login failed for ' . $ftp_username . ', ' . $ftp_password,
+                                            'partial' => 1
+                            );
+            } else {
+                if ($ftp_site_folder) {
+                    $ftp_remote_folder .= '/' . $this->site_name;
+                }
+                $remote_loation = basename($backup_file);
+                $local_location = $backup_file;
+                
+                $sftp->chdir($ftp_remote_folder);
+                //$sftp->delete(basename($backup_file));
+                $temp = wp_tempnam('iwp_temp_backup.zip');
+                
+                $get  = $sftp->get(basename($backup_file), $temp);
+                if ($get === false) {
+                    return false;
+                } else {
+                    return $temp;
+                }
+                //SFTP library has automatic connection closed. So no need to call seperate connection close function
+
+            }
+            
+        } else {
+            $port = $ftp_port ? $ftp_port : 21; //default port is 21
+            if ($ftp_ssl && function_exists('ftp_ssl_connect')) {
+                $conn_id = ftp_ssl_connect($ftp_hostname,$port);
+
+            } else if (function_exists('ftp_connect')) {
+                $conn_id = ftp_connect($ftp_hostname,$port);
+                if ($conn_id === false) {
+                    return false;
+                }
+            } 
+            $login = @ftp_login($conn_id, $ftp_username, $ftp_password);
+            if ($login === false) {
                 return false;
             }
-        } 
-        $login = @ftp_login($conn_id, $ftp_username, $ftp_password);
-        if ($login === false) {
-            return false;
+
+            if ($ftp_site_folder)
+                $ftp_remote_folder .= '/' . $this->site_name;
+
+            if($ftp_passive){
+                                            @ftp_pasv($conn_id,true);
+                                    }
+
+                    //$temp = ABSPATH . 'iwp_temp_backup.zip';
+            $temp = wp_tempnam('iwp_temp_backup.zip');
+
+            $get  = ftp_get($conn_id, $temp, $ftp_remote_folder . '/' . $backup_file, FTP_BINARY);
+            if ($get === false) {
+                return false;
+            } else {
+            }
+            ftp_close($conn_id);
+
+            return $temp;
         }
         
-        if ($ftp_site_folder)
-            $ftp_remote_folder .= '/' . $this->site_name;
         
-        if($ftp_passive){
-					@ftp_pasv($conn_id,true);
-				}
-        
-		//$temp = ABSPATH . 'iwp_temp_backup.zip';
-        $temp = wp_tempnam('iwp_temp_backup.zip');
-		
-        $get  = ftp_get($conn_id, $temp, $ftp_remote_folder . '/' . $backup_file, FTP_BINARY);
-        if ($get === false) {
-            return false;
-        } else {
-        }
-        ftp_close($conn_id);
-        
-        return $temp;
     }
 	
    
