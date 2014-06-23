@@ -2695,7 +2695,7 @@
 
         // ----- Open the source file
         if (($v_file = @fopen($p_filename, "rb")) == 0) {
-          IWPPclZip::privErrorLog(PCLZIP_ERR_READ_OPEN_FAIL, "Unable to open file '$p_filename' in binary read mode");
+          IWPPclZip::privErrorLog(PCLZIP_ERR_READ_OPEN_FAIL, "Unable to open file '$p_filename' in binary read mode. Please try changing the file permission to 644 or exclude this file from your backup.");
           return IWPPclZip::errorCode();
         }
 
@@ -2834,7 +2834,7 @@
 
     // ----- Open the source file
     if (($v_file = @fopen($p_filename, "rb")) == 0) {
-      IWPPclZip::privErrorLog(PCLZIP_ERR_READ_OPEN_FAIL, "Unable to open file '$p_filename' in binary read mode");
+      IWPPclZip::privErrorLog(PCLZIP_ERR_READ_OPEN_FAIL, "Unable to open file '$p_filename' in binary read mode. Please try changing the file permission to 644 or exclude this file from your backup.");
       return IWPPclZip::errorCode();
     }
 
