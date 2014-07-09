@@ -105,7 +105,7 @@ class IWP_MMB_BLC extends IWP_MMB_Core
             }
             return $success;
         } else {
-            return array('error'=>"Broken Link Checker plugin is not activated");
+            return array('error'=>"Broken Link Checker plugin is not activated", 'error_code' => 'blc_plugin_not_activated_blc_get_all_links');
         }
     }
 
@@ -118,7 +118,7 @@ class IWP_MMB_BLC extends IWP_MMB_Core
             $rez['linkType']=$params['linkType'];
             return $rez;
         } else {
-            return array('error'=>"Broken Link Checker plugin is not activated");
+            return array('error'=>"Broken Link Checker plugin is not activated", 'error_code' => 'blc_plugin_not_activated_blc_update_link');
         }
     }
 
@@ -133,7 +133,7 @@ class IWP_MMB_BLC extends IWP_MMB_Core
             $rez['linkType']=$params['linkType'];
             return $rez;
         } else {
-            return array('error'=>"Broken Link Checker plugin is not activated");
+            return array('error'=>"Broken Link Checker plugin is not activated", 'error_code' => 'blc_plugin_not_activated_blc_unlink');
         }
     }
 
@@ -153,11 +153,11 @@ class IWP_MMB_BLC extends IWP_MMB_Core
             if ( $link->save() ){
                 $rez = array('old_link_id'=>$params['linkID'],'linkType'=>$params['linkType'],'marked'=>1);
             } else {
-                $rez = array('error'=>'Action couldn\'t be completed');
+                $rez = array('error'=>'Action couldn\'t be completed', 'error_code' => 'blc_plugin_action_couldnt_completed_blc_mark_as_not_broken');
             }
             return $rez;
         } else {
-            return array('error'=>"Broken Link Checker plugin is not activated");
+            return array('error'=>"Broken Link Checker plugin is not activated", 'error_code' => 'blc_plugin_not_activated_blc_mark_as_not_broken');
         }
     }
     function blc_dismiss_link($params){
@@ -179,11 +179,11 @@ class IWP_MMB_BLC extends IWP_MMB_Core
             if ( $link->save() ){
                 $rez = array('old_link_id'=>$params['linkID'],'linkType'=>$params['linkType'],'dismissvalue_set'=>1);
             } else {
-                $rez = array('error'=>'Action couldn\'t be completed');
+                $rez = array('error'=>'Action couldn\'t be completed', 'error_code' => 'blc_plugin_action_couldnt_completed_blc_set_dismiss_status');
             }
             return $rez;
         } else {
-            return array('error'=>"Broken Link Checker plugin is not activated");
+            return array('error'=>"Broken Link Checker plugin is not activated", 'error_code' => 'blc_plugin_not_activated_blc_set_dismiss_status');
         }
     }
 

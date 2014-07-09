@@ -342,7 +342,7 @@ class IWP_MMB_Helper
     {
         if (!$data && !$signature) {
             return array(
-                'error' => 'Authentication failed.'
+                'error' => 'Authentication failed.', 'error_code' => 'authentication_failed'
             );
         }
         
@@ -351,14 +351,14 @@ class IWP_MMB_Helper
         if(isset($_GET['auto_login'])){//temp fix for stopping reuse of open admin url
         	if ((int) $current_message >= (int) $message_id)
 				return array(
-					'error' => 'Invalid message recieved.'
+					'error' => 'Invalid message recieved.', 'error_code' => 'invalid_message_received'
 				);
 		}
 		
         $pl_key = $this->get_admin_panel_public_key();
         if (!$pl_key) {
             return array(
-                'error' => 'Authentication failed. Deactivate and activate the InfiniteWP Client plugin on this site, then remove the website from your InfiniteWP Admin Panel and add it again.'
+                'error' => 'Authentication failed. Deactivate and activate the InfiniteWP Client plugin on this site, then remove the website from your InfiniteWP Admin Panel and add it again.', 'error_code' => 'authentication_failed_reactive_and_readd_the_site'
             );
         }
         
@@ -369,11 +369,11 @@ class IWP_MMB_Helper
                 return true;
             } else if ($verify == 0) {
                 return array(
-                    'error' => 'Invalid message signature. Deactivate and activate the InfiniteWP Client plugin on this site, then remove the website from your InfiniteWP Admin Panel and add it again.'
+                    'error' => 'Invalid message signature. Deactivate and activate the InfiniteWP Client plugin on this site, then remove the website from your InfiniteWP Admin Panel and add it again.', 'error_code' => 'invalid_message_signature_openssl'
                 );
             } else {
                 return array(
-                    'error' => 'Command not successful! Please try again.'
+                    'error' => 'Command not successful! Please try again.', 'error_code' => 'command_not_successful'
                 );
             }
         } else if ($this->get_random_signature()) {
@@ -383,13 +383,13 @@ class IWP_MMB_Helper
 				return true;
             }
             return array(
-                'error' => 'Invalid message signature. Deactivate and activate the InfiniteWP Client plugin on this site, then remove the website from your InfiniteWP Admin Panel and add it again.'
+                'error' => 'Invalid message signature. Deactivate and activate the InfiniteWP Client plugin on this site, then remove the website from your InfiniteWP Admin Panel and add it again.', 'error_code' => 'invalid_message_signature_random_signature'
             );
         }
         // no rand key - deleted in get_stat maybe
         else
             return array(
-                'error' => 'Invalid message signature. Deactivate and activate the InfiniteWP Client plugin on this site, then remove the website from your InfiniteWP Admin Panel and add it again.'
+                'error' => 'Invalid message signature. Deactivate and activate the InfiniteWP Client plugin on this site, then remove the website from your InfiniteWP Admin Panel and add it again.', 'error_code' => 'invalid_message_signature'
             );
     }
     
@@ -488,19 +488,19 @@ class IWP_MMB_Helper
 	
 	function iwp_mmb_download_url($url, $file_name)
 	{
-    if (function_exists('fopen') && function_exists('ini_get') && ini_get('allow_url_fopen') == true && ($destination = @fopen($file_name, 'wb')) && ($source = @fopen($url, "r")) ) {
-    
-    
-    while ($a = @fread($source, 1024* 1024)) {
-    @fwrite($destination, $a);
-    }
-    
-    fclose($source);
-    fclose($destination);
-    } else 
-    if (!fsockopen_download($url, $file_name))
-        die('Error downloading file ' . $url);
-    return $file_name;
-	 }
+		if (function_exists('fopen') && function_exists('ini_get') && ini_get('allow_url_fopen') == true && ($destination = @fopen($file_name, 'wb')) && ($source = @fopen($url, "r")) ) {
+		
+		
+		while ($a = @fread($source, 1024* 1024)) {
+		@fwrite($destination, $a);
+		}
+		
+		fclose($source);
+		fclose($destination);
+		} else 
+		if (!fsockopen_download($url, $file_name))
+			die('Error downloading file ' . $url);
+		return $file_name;
+	}
 }
 ?>

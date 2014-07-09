@@ -68,7 +68,7 @@ class IWP_MMB_Link extends IWP_MMB_Core
 			
 			$is_success = wp_insert_link($params);
 			
-			return $is_success ? true : array('error' => 'Failed to add link.'); 
+			return $is_success ? true : array('error' => 'Failed to add link.', 'error_code' => 'failed_to_add_link'); 
     }
 	
 	function remove_element($arr, $val){

@@ -141,7 +141,6 @@ class IWP_google_Http_MediaFileUpload
       $this->resumeUri = $this->getResumeUri();
     }
 	
-	file_put_contents(WP_CONTENT_DIR .'/DE_clientPluginSIde.php',"\n ------ resumeURI-------- ".var_export($this->resumeUri,true)."\n",FILE_APPEND);
 	
     if (false == $chunk) {
       $chunk = substr($this->data, $this->progress, $this->chunkSize);

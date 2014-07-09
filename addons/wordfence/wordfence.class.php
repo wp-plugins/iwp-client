@@ -32,7 +32,7 @@ class IWP_WORDFENCE extends IWP_MMB_Core
 	 	if($this->_checkWordFence()) {
 	 		return wordfence::ajax_scan_callback();
 	 	} else {
-	 		return array('error'=>"Word Fence plugin is not activated");
+	 		return array('error'=>"Word Fence plugin is not activated", 'error_code' => 'wordfence_plugin_is_not_activated');
 	 	}
 	 }
 	 

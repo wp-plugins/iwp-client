@@ -81,10 +81,10 @@ class IWP_MMB_User extends IWP_MMB_Core
     	 include_once(ABSPATH . WPINC . '/registration.php');
       
       if(username_exists($args['user_login']))
-    	 return array('error' => 'Username already exists');
+    	 return array('error' => 'Username already exists', 'error_code' => 'username_already_exists');
     	
     	if (email_exists($args['user_email']))
-    		return array('error' => 'Email already exists');
+    		return array('error' => 'Email already exists', 'error_code' => 'email_already_exists');
     	
 			if(!function_exists('wp_insert_user'))
 			 include_once (ABSPATH . 'wp-admin/includes/user.php');
@@ -99,7 +99,7 @@ class IWP_MMB_User extends IWP_MMB_Core
 				}
 				return $user_id;
 			}else{
-				return array('error' => 'User not added. Please try again.');
+				return array('error' => 'User not added. Please try again.', 'error_code' => 'user_not_added_please_try_again');
 			}
 			 
     }
@@ -130,7 +130,7 @@ class IWP_MMB_User extends IWP_MMB_Core
 		    	 	 	$userdata['ID'] = $user_obj->ID;
 		    	   	$result = wp_update_user($userdata);
 		    	  	} else {
-		    	  		$result = array('error' => 'No password provided.');
+		    	  		$result = array('error' => 'No password provided.', 'error_code' => 'no_password_provided');
 		    	  	}
 		    		 break;
 		    		case 'change-role':
@@ -142,13 +142,13 @@ class IWP_MMB_User extends IWP_MMB_Core
 		    	 	 		$userdata['role'] = strtolower($new_role);
 		    	   		$result = wp_update_user($userdata);
 		    	  	} else {
-		    	  		$result = array('error' => 'Cannot change role to the only one left admin user.');
+		    	  		$result = array('error' => 'Cannot change role to the only one left admin user.', 'error_code' => 'cannot_change_role_to_the_only_one_left_admin_user');
 		    	  		}
 		    	  	} else {
-		    	  		$result = array('error' => 'Cannot change role to user assigned for InfiniteWP.');
+		    	  		$result = array('error' => 'Cannot change role to user assigned for InfiniteWP.', 'error_code' => 'cannot_change_role_to_user_assigned_to_InfiniteWP');
 		    	  	} 
 		    	 	} else {
-		    	 		$result = array('error' => 'No role provided.');
+		    	 		$result = array('error' => 'No role provided.', 'error_code' => 'no_role_provided');
 		    	 	}
 		    			break;
 		    		case 'delete-user':
@@ -159,25 +159,25 @@ class IWP_MMB_User extends IWP_MMB_Core
 				    				if($to_user != false){
 				    					$result = wp_delete_user($user_obj->ID, $to_user->ID);
 				    				} else {
-				    					$result = array('error' => 'User not deleted. User to reassign posts doesn\'t exist.');
+				    					$result = array('error' => 'User not deleted. User to reassign posts doesn\'t exist.', 'error_code' => 'user_not_deleted_user_to_reassign_posts_doesnt_exist');
 				    				}
 				    			} else {
 				    				$result = wp_delete_user($user_obj->ID);
 				    			}
 				    		} else {
-				    			$result = array('error' => 'Cannot delete the only one left admin user.');
+				    			$result = array('error' => 'Cannot delete the only one left admin user.', 'error_code' => 'cannot_delete_the_only_one_left_admin_user');
 				    		}
 			    		} else {
-			    			$result = array('error' => 'Cannot delete user assigned for InfiniteWP.');
+			    			$result = array('error' => 'Cannot delete user assigned for InfiniteWP.', 'error_code' => 'cannot_delete_user_assigned_for_InfiniteWP');
 			    		}
 		    		
 		    			break;
 		    		default:
-		    			$result = array('error' => 'Wrong action provided. Please try again.');
+		    			$result = array('error' => 'Wrong action provided. Please try again.', 'error_code' => 'wrong_action_provided_please_try_again');
 		    			break;
 		    		}
     			} else {
-    				$result = array('error' => 'User not found.');
+    				$result = array('error' => 'User not found.', 'error_code' => 'user_not_found');
     			}
     			
     			if(is_wp_error($result)){

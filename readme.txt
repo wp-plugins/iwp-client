@@ -48,9 +48,15 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog ==
 
+= 1.3.0 =
+* Improvement: Multi-call backup & upload.
+* Fix: Fatal error Call to undefined function get_plugin_data() while client plugin update.
+* Fix: Bug fixes.
+
+
 = 1.2.15 =
-* Improvement: Support for backup upload to SFTP repository
-* Fix: Bug fixes
+* Improvement: Support for backup upload to SFTP repository.
+* Fix: Bug fixes.
 
 = 1.2.14 =
 * Improvement: SQL dump taken via mysqldump made compatible for clone.
