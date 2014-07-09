@@ -152,13 +152,13 @@ class IWP_MMB_Post extends IWP_MMB_Core
 					}
 					
 					if(isset($upload['error']) && !empty($upload['error'])){
-						return array('error' => $upload['error']);
+						return array('error' => $upload['error'], 'error_code' => 'upload_error');
 					}
 					$file_name = basename($no_thumb);
 					$tmp_file  = download_url($no_thumb);
 					
 					if(is_wp_error($tmp_file)){
-						return array('error' => $tmp_file->get_error_message());
+						return array('error' => $tmp_file->get_error_message(), 'error_code' => 'error_download_img_thumb_url');
 					}
 					
 					$attach_upload['url']  = $upload['url'] . '/' . $file_name;
@@ -234,7 +234,7 @@ class IWP_MMB_Post extends IWP_MMB_Core
 						}
 					} else {
 						@unlink($tmp_file);
-						return array('error' => "Cannot create attachment file in ".$attach_upload['path']." Please set correct permissions.");
+						return array('error' => "Cannot create attachment file in ".$attach_upload['path']." Please set correct permissions.", 'error_code' =>'cannot_create_attachment_file_set_correct_permissions' );
 						
 					}
 					@unlink($tmp_file);
@@ -250,12 +250,12 @@ class IWP_MMB_Post extends IWP_MMB_Core
                 $file_name             = basename($img['src']);
                  
                 if(isset($upload['error']) && !empty($upload['error'])){
-                	return array('error' => $upload['error']);
+                	return array('error' => $upload['error'], 'error_code' => 'upload_error_post_atta_img');
                 }
                 
                 $tmp_file              = download_url($img['src']);
                 if(is_wp_error($tmp_file)){
-                	return array('error' => $tmp_file->get_error_message());
+                	return array('error' => $tmp_file->get_error_message(), 'error_code' => 'download_url_wp_error_post_atta_img');
                 }
                 
                 $attach_upload['url']  = $upload['url'] . '/' . $file_name;
@@ -295,7 +295,7 @@ class IWP_MMB_Post extends IWP_MMB_Core
                     
                 } else {
                 	@unlink($tmp_file);
-                	return array('error' => "Cannot create attachment file in ".$attach_upload['path']." Please set correct permissions.");
+                	return array('error' => "Cannot create attachment file in ".$attach_upload['path']." Please set correct permissions.", 'error_code' => 'cannot_create_attachment_post_featured_img');
                 }
                 @unlink($tmp_file);
             }
@@ -344,7 +344,7 @@ class IWP_MMB_Post extends IWP_MMB_Core
         	if($post_data['iwp_post_edit'] && $post_data['iwp_force_publish']){
         	 $post_id = wp_insert_post($post_data);
         	} elseif($post_data['iwp_post_edit'] && !$post_data['iwp_force_publish']) {
-        		return array('error' => "Post not found.");
+        		return array('error' => "Post not found.", 'error_code' => 'post_not_found');
         	} else {
         		$post_id = wp_insert_post($post_data);
         	}
@@ -369,7 +369,7 @@ class IWP_MMB_Post extends IWP_MMB_Core
         if ($post_featured_img != '') {
             $file_name             = basename($post_featured_img);
             if(isset($upload['error']) && !empty($upload['error'])){
-                	return array('error' => $upload['error']);
+                	return array('error' => $upload['error'], 'error_code' => 'error_post_featured_img');
                 }
             $tmp_file              = download_url($post_featured_img);
             if(is_wp_error($tmp_file)){

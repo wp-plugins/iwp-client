@@ -193,14 +193,14 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
         extract($params);
        if (!function_exists('gzinflate')) {
             return array(
-                   'error' => 'Gzip library functions are not available.' 
+                   'error' => 'Gzip library functions are not available.', 'error_code' => 'gzip_library_functions_are_not_available'
              );
         }else{
             $fileContent = gzinflate($fileContent);
         }
        if (!$this->is_server_writable()) {
               return array(
-                   'error' => 'Failed, please add FTP details' 
+                   'error' => 'Failed, please add FTP details', 'error_code' => 'failed_please_add_FTP_details_file_editor_upload'
              );  
         } 
         
@@ -208,14 +208,14 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
         ob_start();
         if (false === ($creds = request_filesystem_credentials($url, '', false, ABSPATH, null) ) ) {
             return array(
-                   'error' => 'Unable to get file system credentials' 
+                   'error' => 'Unable to get file system credentials', 'error_code' => 'unable_to_get_file_system_credentials_file_editor_upload'
              );   // stop processing here
         }
         ob_end_clean();
         
         if ( ! WP_Filesystem($creds, ABSPATH) ) {
             return array(
-                   'error' => 'Unable to initiate file system. Please check you have entered valid FTP credentials.'
+                   'error' => 'Unable to initiate file system. Please check you have entered valid FTP credentials.', 'error_code' => 'unable_to_initiate_file_system_check_ftp_credentials_file_editor_upload'
              );   // stop processing here
         }
 
@@ -229,7 +229,7 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
         $is_dir_created = mkdir($new_temp_folder);// new folder should be empty
         if(!$is_dir_created){
             return array(
-                   'error' => 'Unable to create a temporary directory.'
+                   'error' => 'Unable to create a temporary directory.', 'error_code' => 'unable_to_create_temporary_directory_file_editor_upload'
             );
         }
 
@@ -238,19 +238,19 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
             $remote_abspath = trailingslashit($remote_abspath); 
         }else{
             return array(
-                   'error' => 'Unable to locate WP root directory using file system.'
+                   'error' => 'Unable to locate WP root directory using file system.', 'error_code' => 'unable_to_locate_root_directory_remote_abspath_file_editor_upload'
              );
         }
 
         if($folderPath == 'root' && ($filePath == 'wp-config' || $filePath == 'wp-config.php' ) ){
             return array(
-                    'error' => 'wp-config file is not allowed.'
+                    'error' => 'wp-config file is not allowed.', 'error_code' => 'config_file_is_not_allowed_file_editor_upload'
                 );
         }
         
         $file = $this->get_file_editor_vars($remote_abspath,$folderPath,$filePath,$ext);
         if($file === false){
-            return array('error' => 'File path given is invalid.');
+            return array('error' => 'File path given is invalid.', 'error_code' => 'file_path_given_is_invalid_file_editor_upload');
         }
 
         $new_temp_subfolders = $new_temp_folder;
@@ -259,7 +259,7 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
             $is_subdir_created = mkdir($new_temp_subfolders);// new folder should be empty
             if(!$is_subdir_created){
                 return array(
-                       'error' => 'Unable to create a temporary directory.'
+                       'error' => 'Unable to create a temporary directory.', 'error_code' => 'unable_to_locate_wp_root_directory_using_file_system_file_editor_upload'
                 );
             }
         }

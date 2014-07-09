@@ -164,8 +164,8 @@ class IWP_MMB_Core extends IWP_MMB_Helper
 			'wp_optimize' => 'iwp_mmb_wp_optimize',
 			
 			'backup_repository' => 'iwp_mmb_backup_repository',
-
-            'get_all_links'         => 'iwp_mmb_get_all_links',
+			'trigger_backup_multi' => 'iwp_mmb_trigger_check',
+			'get_all_links'         => 'iwp_mmb_get_all_links',
             'update_broken_link'    => 'iwp_mmb_update_broken_link',
             'unlink_broken_link'    => 'iwp_mmb_unlink_broken_link',
             'markasnot_broken_link' => 'iwp_mmb_markasnot_broken_link',
@@ -328,7 +328,7 @@ class IWP_MMB_Core extends IWP_MMB_Helper
         
         return $this->optimize_instance;
     }
-
+    
 
     /**
      * Gets an instance of the WP_BrokenLinks class
@@ -498,15 +498,25 @@ class IWP_MMB_Core extends IWP_MMB_Helper
      * Gets an instance of stats class
      *
      */
-    function get_backup_instance()
+    function get_backup_instance($mechanism='')
     {
+		//$mechanism = 'multiCall';
         if (!isset($this->backup_instance)) {
-            $this->backup_instance = new IWP_MMB_Backup();
+			if($mechanism == 'singleCall' || $mechanism == ''){
+				$this->backup_instance = new IWP_MMB_Backup_Singlecall();
+			}
+			elseif($mechanism == 'multiCall'){
+				$this->backup_instance = new IWP_MMB_Backup_Multicall();
+			}
+			else{
+				iwp_mmb_response(array('error' => 'mechanism not found'), true);
+				//return false;
+			}
         }
         
         return $this->backup_instance;
     }
-    
+
 	function get_backup_repository_instance()
     {
         if (!isset($this->backup_repository_instance)) {
@@ -529,7 +539,7 @@ class IWP_MMB_Core extends IWP_MMB_Helper
         return $this->link_instance;
     }
     
-	function get_installer_instance()
+    function get_installer_instance()
     {
         if (!isset($this->installer_instance)) {
             $this->installer_instance = new IWP_MMB_Installer();
@@ -681,9 +691,11 @@ class IWP_MMB_Core extends IWP_MMB_Helper
      */
     function update_client_plugin($params)
     {
+		
         extract($params);
         if ($download_url) {
             @include_once ABSPATH . 'wp-admin/includes/file.php';
+			@include_once ABSPATH . 'wp-admin/includes/plugin.php';
             @include_once ABSPATH . 'wp-admin/includes/misc.php';
             @include_once ABSPATH . 'wp-admin/includes/template.php';
             @include_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
@@ -691,7 +703,7 @@ class IWP_MMB_Core extends IWP_MMB_Helper
             
             if (!$this->is_server_writable()) {
                 return array(
-                    'error' => 'Failed. please add FTP details for automatic upgrades.'
+                    'error' => 'Failed. please add FTP details for automatic upgrades.', 'error_code' => 'automatic_upgrade_failed_add_ftp_details'
                 );
             }
             
@@ -710,18 +722,59 @@ class IWP_MMB_Core extends IWP_MMB_Helper
             ob_end_clean();
 			@wp_update_plugins();
 			
+			//iwp_mmb_create_backup_table();
+			
+			//add_action( 'plugins_loaded', 'iwp_mmb_create_backup_table' );
+			
+			/*global $wpdb;
+			
+				
+			$IWP_MMB_BACKUP_TABLE_VERSION = '1.0';
+			if (get_site_option( 'iwp_backup_table_version' ) != $IWP_MMB_BACKUP_TABLE_VERSION) {
+				
+				$table_name = $wpdb->base_prefix . "iwp_backup_status"; 
+								
+				$sql = "
+						CREATE TABLE IF NOT EXISTS $table_name (
+						  `ID` int(11) NOT NULL AUTO_INCREMENT,
+						  `historyID` int(11) NOT NULL,
+						  `taskName` varchar(255) NOT NULL,
+						  `action` varchar(50) NOT NULL,
+						  `type` varchar(50) NOT NULL,
+						  `category` varchar(50) NOT NULL,
+						  `stage` varchar(255) NOT NULL,
+						  `status` varchar(255) NOT NULL,
+						  `finalStatus` varchar(50) DEFAULT NULL,
+						  `statusMsg` varchar(255) NOT NULL,
+						  `requestParams` text NOT NULL,
+						  `responseParams` longtext,
+						  `taskResults` text,
+						  `startTime` int(11) DEFAULT NULL,
+						  `endTime` int(11) NOT NULL,
+						  PRIMARY KEY (`ID`)
+						) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+						";
+					
+				require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+				dbDelta( $sql );
+				
+				add_option( "iwp_backup_table_version", $IWP_MMB_BACKUP_TABLE_VERSION);
+			}*/
+			// import iwp_client_backup_tasks option table array to row data.
+		
+			
             if (is_wp_error($result) || !$result) {
                 return array(
-                    'error' => 'InfiniteWP Client plugin could not be updated.'
+                    'error' => 'InfiniteWP Client plugin could not be updated.', 'error_code' => 'client_plugin_could_not_be_updated'
                 );
-            } else {
+            } else {			
                 return array(
                     'success' => 'InfiniteWP Client plugin successfully updated.'
                 );
             }
         }
         return array(
-            'error' => 'Bad download path for client installation file.'
+            'error' => 'Bad download path for client installation file.', 'error_code' => 'client_plugin_bad_download_path'
         );
     }
     

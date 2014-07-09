@@ -43,7 +43,7 @@ class IWP_Dropbox {
 		$file = str_replace("\\", "/",$file);
 		if (!is_readable($file) or !is_file($file))
 			throw new IWP_DropboxException("Error: File \"$file\" is not readable or doesn't exist.");
-        $filesize=filesize($file);
+        $filesize=iwp_mmb_get_file_size($file);
         if ($filesize < (1024*1024*50)) {  //chunk transfer on bigger uploads <50MB
             $filehandle = fopen($file,'r');
             $url = self::API_CONTENT_URL.self::API_VERSION_URL.'files_put/'.$this->root.'/'.trim($path, '/');
@@ -55,17 +55,21 @@ class IWP_Dropbox {
         return $output;
 	}
 
-    public function chunked_upload($file, $path = '',$overwrite=true){
-        $file = str_replace("\\", "/",$file);
+    public function chunked_upload($file, $path = '',$overwrite=true,$uploadid = null,$offset = 0, $readSize = 0, $isCommit = false){
+		
+		$file = str_replace("\\", "/",$file);
         if (!is_readable($file) or !is_file($file))
             throw new IWP_DropboxException("Error: File \"$file\" is not readable or doesn't exist.");
         $file_handle=fopen($file,'r');
-        $uploadid=null;
-        $offset=0;
+		fseek($file_handle,$offset);
+        /* $uploadid=null;
+        $offset=0; */
         $ProgressFunction=null;
-        while ($data=fread($file_handle, (1024*1024*30))) {  //1024*1024*30 = 30MB
-			iwp_mmb_auto_print('dropbox_chucked_upload');
-            $chunkHandle = fopen('php://memory', 'rw');
+		
+		
+        if($data=fread($file_handle, ($readSize))) {  //1024*1024*30 = 30MB
+			//iwp_mmb_auto_print('dropbox_chucked_upload');
+            $chunkHandle = fopen('php://temp', 'rw');
             fwrite($chunkHandle,$data);
             rewind($chunkHandle);
             //overwrite progress function
@@ -73,21 +77,28 @@ class IWP_Dropbox {
                 $ProgressFunction=$this->ProgressFunction;
                 $this->ProgressFunction=false;
             }
+			
             $url = self::API_CONTENT_URL.self::API_VERSION_URL.'chunked_upload';
             $output = $this->request($url, array('upload_id' => $uploadid,'offset'=>$offset), 'PUT', $chunkHandle, strlen($data));
             fclose($chunkHandle);
+			
             if ($ProgressFunction) {
                 call_user_func($ProgressFunction,0,0,0,$offset);
                 $this->ProgressFunction=$ProgressFunction;
             }
-            //args for next chunk
+			
+			//args for next chunk
             $offset=$output['offset'];
             $uploadid=$output['upload_id'];
-            fseek($file_handle,$offset);
+            //fseek($file_handle,$offset);
         }
         fclose($file_handle);
+		if($isCommit)
+		{
         $url = self::API_CONTENT_URL.self::API_VERSION_URL.'commit_chunked_upload/'.$this->root.'/'.trim($path, '/');
-        return $this->request($url, array('overwrite' => ($overwrite)? 'true' : 'false','upload_id'=>$uploadid), 'POST');
+			$output = $this->request($url, array('overwrite' => ($overwrite)? 'true' : 'false','upload_id'=>$uploadid), 'POST');
+    }
+		return $output;
     }
 
 	public function download($path,$echo=false){

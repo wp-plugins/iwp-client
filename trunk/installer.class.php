@@ -57,18 +57,18 @@ class IWP_MMB_Installer extends IWP_MMB_Core
         
         if (!isset($package) || empty($package))
             return array(
-                'error' => '<p>No files received. Internal error.</p>'
+                'error' => '<p>No files received. Internal error.</p>', 'error_code' => 'no_files_receive_internal_error'
             );
 			
 		if (!$this->is_server_writable()) {
 			return array(
-			     'error' => 'Failed, please add FTP details' 
+			     'error' => 'Failed, please add FTP details', 'error_code' => 'failed_please_add_ftp_install_remote_file'
            );  
       }        
 	
         if (defined('WP_INSTALLING') && file_exists(ABSPATH . '.maintenance'))
             return array(
-                'error' => '<p>Site under maintanace.</p>'
+                'error' => '<p>Site under maintanace.</p>','error_code' => 'site_under_maintanace'
             );
         
         if (!class_exists('WP_Upgrader'))
@@ -151,12 +151,12 @@ class IWP_MMB_Installer extends IWP_MMB_Core
     {
 		if ($params == null || empty($params))
             return array(
-                'error' => 'No upgrades passed.'
+                'error' => 'No upgrades passed.', 'error_code' => 'no_upgrades_passed'
             );
         
         if (!$this->is_server_writable()) {
             return array(
-                'error' => 'Failed. please add FTP details.'
+                'error' => 'Failed. please add FTP details.', 'error_code' => 'failed_please_add_ftp_do_upgrade'
             );
         }
         
@@ -246,7 +246,7 @@ class IWP_MMB_Installer extends IWP_MMB_Core
             
             if ($updated->response == "development" && $current->response == "upgrade") {
                 return array(
-                    'error' => '<font color="#900">Unexpected error. Please upgrade manually.</font>'
+                    'error' => '<font color="#900">Unexpected error. Please upgrade manually.</font>', 'error_code' => 'unexpected_error_please_upgrade_manually'
                 );
             } else if ($updated->response == $current->response || ($updated->response == "upgrade" && $current->response == "development")) {
                 if ($updated->locale != $current->locale) {
@@ -258,18 +258,18 @@ class IWP_MMB_Installer extends IWP_MMB_Core
                     }
                     if ($current_update == false)
                         return array(
-                            'error' => ' Localization mismatch. Try again.'
+                            'error' => ' Localization mismatch. Try again.', 'error_code' => 'localization_mismatch'
                         );
                 } else {
                     $current_update = $updated;
                 }
             } else
                 return array(
-                    'error' => ' Transient mismatch. Try again.'
+                    'error' => ' Transient mismatch. Try again.', 'error_code' => 'transient_mismatch'
                 );
         } else
             return array(
-                'error' => ' Refresh transient failed. Try again.'
+                'error' => ' Refresh transient failed. Try again.', 'error_code' => 'refresh_transient_failed'
             );
         if ($current_update != false) {
             global $iwp_mmb_wp_version, $wp_filesystem, $wp_version;
@@ -283,7 +283,7 @@ class IWP_MMB_Installer extends IWP_MMB_Core
                 $this->iwp_mmb_maintenance_mode(false);
                 if (is_wp_error($result)) {
                     return array(
-                        'error' => $this->iwp_mmb_get_error($result)
+                        'error' => $this->iwp_mmb_get_error($result), 'error_code' => 'maintenance_mode_upgrade_core'
                     );
                 } else
                     return array(
@@ -297,7 +297,7 @@ class IWP_MMB_Installer extends IWP_MMB_Core
                         $result = wp_update_core($current_update);
                         if (is_wp_error($result)) {
                             return array(
-                                'error' => $this->iwp_mmb_get_error($result)
+                                'error' => $this->iwp_mmb_get_error($result), 'error_code' => 'wp_update_core_upgrade_core'
                             );
                         } else
                             return array(
@@ -324,7 +324,7 @@ class IWP_MMB_Installer extends IWP_MMB_Core
                     ));
                     if (is_wp_error($res))
                         return array(
-                            'error' => $this->iwp_mmb_get_error($res)
+                            'error' => $this->iwp_mmb_get_error($res), 'error_code' => 'upgrade_core_wp_error_res'
                         );
                     
                     $wp_dir = trailingslashit($wp_filesystem->abspath());
@@ -338,19 +338,19 @@ class IWP_MMB_Installer extends IWP_MMB_Core
                     $download = $upgrader->download_package($core_package);
                     if (is_wp_error($download))
                         return array(
-                            'error' => $this->iwp_mmb_get_error($download)
+                            'error' => $this->iwp_mmb_get_error($download), 'error_code' => 'download_upgrade_core'
                         );
                     
                     $working_dir = $upgrader->unpack_package($download);
                     if (is_wp_error($working_dir))
                         return array(
-                            'error' => $this->iwp_mmb_get_error($working_dir)
+                            'error' => $this->iwp_mmb_get_error($working_dir), 'error_code' => 'working_dir_upgrade_core'
                         );
                     
                     if (!$wp_filesystem->copy($working_dir . '/wordpress/wp-admin/includes/update-core.php', $wp_dir . 'wp-admin/includes/update-core.php', true)) {
                         $wp_filesystem->delete($working_dir, true);
                         return array(
-                            'error' => 'Unable to move update files.'
+                            'error' => 'Unable to move update files.', 'error_code' => 'unable_to_move_update_files'
                         );
                     }
                     
@@ -365,7 +365,7 @@ class IWP_MMB_Installer extends IWP_MMB_Core
                     $this->iwp_mmb_maintenance_mode(false);
                     if (is_wp_error($update_core))
                         return array(
-                            'error' => $this->iwp_mmb_get_error($update_core)
+                            'error' => $this->iwp_mmb_get_error($update_core), 'error_code' => 'upgrade_core_wp_error'
                         );
                     ob_end_flush();
                     return array(
@@ -373,13 +373,13 @@ class IWP_MMB_Installer extends IWP_MMB_Core
                     );
                 } else {
                     return array(
-                        'error' => 'failed'
+                        'error' => 'failed', 'error_code' => 'failed_WP_Upgrader_class_not_exists'
                     );
                 }
             }
         } else {
             return array(
-                'error' => 'failed'
+                'error' => 'failed', 'error_code' => 'failed_current_update_false'
             );
         }
     }
@@ -388,7 +388,7 @@ class IWP_MMB_Installer extends IWP_MMB_Core
     {
         if (!$plugins || empty($plugins))
             return array(
-                'error' => 'No plugin files for upgrade.'
+                'error' => 'No plugin files for upgrade.', 'error_code' => 'no_plugin_files_for_upgrade'
             );
 			
 		$current = $this->iwp_mmb_get_transient('update_plugins');
@@ -412,13 +412,13 @@ class IWP_MMB_Installer extends IWP_MMB_Core
 			if (!empty($result)) {
                 foreach ($result as $plugin_slug => $plugin_info) {
                     if (!$plugin_info || is_wp_error($plugin_info)) {
-                        $return[$plugin_slug] = $this->iwp_mmb_get_error($plugin_info);
+                        $return[$plugin_slug] = array('error' => $this->iwp_mmb_get_error($plugin_info), 'error_code' => 'upgrade_plugins_wp_error');
                     } else {
 						if(!empty($result[$plugin_slug]) || (isset($current->checked[$plugin_slug]) && version_compare(array_search($plugin_slug, $versions), $current->checked[$plugin_slug], '<') == true)){
 							$return[$plugin_slug] = 1;
 						} else {
 							update_option('iwp_client_forcerefresh', true);
-							$return[$plugin_slug] = 'Could not refresh upgrade transients, please reload website data';
+							$return[$plugin_slug] = array('error' => 'Could not refresh upgrade transients, please reload website data', 'error_code' => 'upgrade_plugins_could_not_refresh_upgrade_transients_please_reload_website_data');
 						}
                     }
                 }
@@ -428,12 +428,12 @@ class IWP_MMB_Installer extends IWP_MMB_Core
                 );
             } else
                 return array(
-                    'error' => 'Upgrade failed.'
+                    'error' => 'Upgrade failed.', 'error_code' => 'upgrade_failed_upgrade_plugins'
                 );
         } else {
             ob_end_clean();
             return array(
-                'error' => 'WordPress update required first.'
+                'error' => 'WordPress update required first.', 'error_code' => 'upgrade_plugins_wordPress_update_required_first'
             );
         }
     }
@@ -442,7 +442,7 @@ class IWP_MMB_Installer extends IWP_MMB_Core
     {
         if (!$themes || empty($themes))
             return array(
-                'error' => 'No theme files for upgrade.'
+                'error' => 'No theme files for upgrade.', 'error_code' => 'no_theme_files_for_upgrade'
             );
 		
 		$current = $this->iwp_mmb_get_transient('update_themes');
@@ -467,13 +467,13 @@ class IWP_MMB_Installer extends IWP_MMB_Core
             if (!empty($result)) {
                 foreach ($result as $theme_tmp => $theme_info) {
 					 if (is_wp_error($theme_info) || empty($theme_info)) {
-                        $return[$theme_tmp] = $this->iwp_mmb_get_error($theme_info);
+                        $return[$theme_tmp] = array('error' => $this->iwp_mmb_get_error($theme_info), 'error_code' => 'upgrade_themes_wp_error');
                     } else {
 						if(!empty($result[$theme_tmp]) || (isset($current->checked[$theme_tmp]) && version_compare(array_search($theme_tmp, $versions), $current->checked[$theme_tmp], '<') == true)){
 							$return[$theme_tmp] = 1;
 						} else {
 							update_option('iwp_client_forcerefresh', true);
-							$return[$theme_tmp] = 'Could not refresh upgrade transients, please reload website data';
+							$return[$theme_tmp] = array('error' => 'Could not refresh upgrade transients, please reload website data', 'error_code' => 'upgrade_themes_could_not_refresh_upgrade_transients_reload_website');
 						}
                     }
                 }
@@ -482,12 +482,12 @@ class IWP_MMB_Installer extends IWP_MMB_Core
                 );
             } else
                 return array(
-                    'error' => 'Upgrade failed.'
+                    'error' => 'Upgrade failed.', 'error_code' => 'upgrade_failed_upgrade_themes'
                 );
         } else {
             ob_end_clean();
             return array(
-                'error' => 'WordPress update required first'
+                'error' => 'WordPress update required first', 'error_code' => 'wordPress_update_required_first_upgrade_themes'
             );
         }
     }
@@ -501,7 +501,7 @@ class IWP_MMB_Installer extends IWP_MMB_Core
         
         if (!$premium || empty($premium))
             return array(
-                'error' => 'No premium files for upgrade.'
+                'error' => 'No premium files for upgrade.', 'error_code' => 'no_premium_files_for_upgrade'
             );
         
         $upgrader       = false;
@@ -599,12 +599,12 @@ class IWP_MMB_Installer extends IWP_MMB_Core
                             } else if (is_string($update['callback'])) {
                                 $update_result = call_user_func($update['callback']);
                             } else {
-                                $update_result = 'Upgrade function "' . $update['callback'] . '" does not exists.';
+                                $update_result = array('error' => 'Upgrade function "' . $update['callback'] . '" does not exists.', 'error_code' => 'upgrade_func_callback_does_not_exists');
                             }
                             
-                            $update_result = $update_result !== true ? $this->iwp_mmb_get_error($update_result) : 1;
+                            $update_result = $update_result !== true ? array('error' => $this->iwp_mmb_get_error($update_result), 'error_code' => 'upgrade_premium_wp_error') : 1;
                         } else
-                            $update_result = 'Bad update params.';
+                            $update_result = array('error' => 'Bad update params.', 'error_code' => 'bad_update_params');
                         
                         $pr_update[$update['type'] . 's']['upgraded'][md5($update['name'])] = $update_result;
                     }
@@ -612,7 +612,7 @@ class IWP_MMB_Installer extends IWP_MMB_Core
             return $pr_update;
         } else {
             foreach ($premium as $pr) {
-                $result[$pr['type'] . 's']['upgraded'][md5($pr['name'])] = 'This premium update is not registered.';
+                $result[$pr['type'] . 's']['upgraded'][md5($pr['name'])] = array('error' => 'This premium update is not registered.', 'error_code' => 'premium_update_not_registered');
             }
             return $result;
         }
@@ -926,11 +926,11 @@ class IWP_MMB_Installer extends IWP_MMB_Core
             
             if (is_wp_error($result)) {
                 $result = array(
-                    'error' => $result->get_error_message()
+                    'error' => $result->get_error_message(), 'error_code' => 'wp_error_edit_plugins'
                 );
             } elseif ($result === false) {
                 $result = array(
-                    'error' => "Failed to perform action."
+                    'error' => "Failed to perform action.", 'error_code' => 'failed_to_perform_action_edit_plugins'
                 );
             } else {
                 $result = "OK";
@@ -959,11 +959,11 @@ class IWP_MMB_Installer extends IWP_MMB_Core
             
             if (is_wp_error($result)) {
                 $result = array(
-                    'error' => $result->get_error_message()
+                    'error' => $result->get_error_message(), 'error_code' => 'wp_error_edit_themes'
                 );
             } elseif ($result === false) {
                 $result = array(
-                    'error' => "Failed to perform action."
+                    'error' => "Failed to perform action.", 'error_code' => 'failed_to_perform_action_edit_themes'
                 );
             } else {
                 $result = "OK";

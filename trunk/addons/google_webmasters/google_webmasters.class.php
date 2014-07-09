@@ -9,6 +9,7 @@ if(!function_exists('iwp_mmb_create_webmasters_redirect_table')){
             global $wpdb;
 
             $IWP_MMB_WEBMASTERS_REDIRECT_TABLE_VERSION =    get_site_option( 'iwp_webmasters_redirect_table_version' );
+
             if(version_compare($IWP_MMB_WEBMASTERS_REDIRECT_TABLE_VERSION, '1.0') == -1){
 
                 $table_name = $wpdb->base_prefix . "iwp_redirects"; 

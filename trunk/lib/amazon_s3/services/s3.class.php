@@ -3664,7 +3664,7 @@ class AmazonS3 extends CFRuntime
 			}
 			else
 			{
-				$upload_filesize = filesize($opt['fileUpload']);
+				$upload_filesize = iwp_mmb_get_file_size($opt['fileUpload']);
 
 				if ($upload_filesize !== false)
 				{
