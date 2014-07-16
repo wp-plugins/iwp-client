@@ -48,6 +48,11 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog ==
 
+= 1.3.1 =
+* Fix: "Unable to create a temporary directory" while cloning to exisiting site or restoring.
+* Fix: Disabled tracking hit count.
+
+
 = 1.3.0 =
 * Improvement: Multi-call backup & upload.
 * Fix: Fatal error Call to undefined function get_plugin_data() while client plugin update.

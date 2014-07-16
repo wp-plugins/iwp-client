@@ -2673,7 +2673,8 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
 }
 
     
-    function restore($args)
+    
+	function restore($args)
 	{
 		global $wpdb, $wp_filesystem;
 		if (empty($args)) {
@@ -2865,6 +2866,52 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
 		// do process
 		//$temp_dir = get_temp_dir();
 		$temp_dir = PCLZIP_TEMPORARY_DIR;
+		
+		
+		
+		if(file_exists(PCLZIP_TEMPORARY_DIR) && is_dir(PCLZIP_TEMPORARY_DIR))
+		{
+			//
+		}
+		else
+		{
+			if(file_exists(dirname(PCLZIP_TEMPORARY_DIR)) && is_dir(dirname(PCLZIP_TEMPORARY_DIR))){
+				@mkdir(PCLZIP_TEMPORARY_DIR, 0755, true);
+			}
+			else{
+				@mkdir(dirname(PCLZIP_TEMPORARY_DIR), 0755, true);
+				@mkdir(PCLZIP_TEMPORARY_DIR, 0755, true);
+			}
+			
+		}
+		if(is_writable(PCLZIP_TEMPORARY_DIR))
+		{
+			@file_put_contents(PCLZIP_TEMPORARY_DIR . '/index.php', ''); //safe	
+		}
+		else
+		{
+			$chmod = chmod(PCLZIP_TEMPORARY_DIR, 777);
+			if(is_writable(PCLZIP_TEMPORARY_DIR)){
+				@file_put_contents(PCLZIP_TEMPORARY_DIR . '/index.php', ''); //safe		
+			}
+	
+		}
+		
+		if(is_writable(PCLZIP_TEMPORARY_DIR))
+		{
+			$temp_dir = PCLZIP_TEMPORARY_DIR;
+		}
+		else{
+			$temp_dir = get_temp_dir();
+			if(!is_writable($temp_dir)){
+				return array(
+							'error' => 'Temporary directory is not writable. Please set 777 permission for '.PCLZIP_TEMPORARY_DIR.' and try again.', 'error_code' => 'pclzip_temp_dir_not_writable_please_set_777'
+							);
+			}
+		}
+		
+		
+		
 		$new_temp_folder = untrailingslashit($temp_dir);
 		$temp_uniq = md5(microtime(1));//should be random
 		while (is_dir($new_temp_folder .'/'. $temp_uniq )) {
