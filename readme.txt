@@ -48,6 +48,9 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog ==
 
+= 1.3.2 =
+* Fix: Dropbox backup upload in single call more then 50MB file not uploading issue.
+
 = 1.3.1 =
 * Fix: "Unable to create a temporary directory" while cloning to exisiting site or restoring.
 * Fix: Disabled tracking hit count.

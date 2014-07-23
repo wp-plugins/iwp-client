@@ -50,12 +50,47 @@ class IWP_Dropbox {
             $output = $this->request($url, array('overwrite' => ($overwrite)? 'true' : 'false'), 'PUT', $filehandle, $filesize);
             fclose($filehandle);
         } else {//chunk transfer on bigger uploads >50MB
-            $output = $this->chunked_upload($file, $path,$overwrite);
+            $output = $this->chunked_upload_single_call($file, $path,$overwrite);
         }
         return $output;
 	}
 
-    public function chunked_upload($file, $path = '',$overwrite=true,$uploadid = null,$offset = 0, $readSize = 0, $isCommit = false){
+	public function chunked_upload_single_call($file, $path = '',$overwrite=true){
+        $file = str_replace("\\", "/",$file);
+        if (!is_readable($file) or !is_file($file))
+            throw new IWP_DropboxException("Error: File \"$file\" is not readable or doesn't exist.");
+        $file_handle=fopen($file,'r');
+        $uploadid=null;
+        $offset=0;
+        $ProgressFunction=null;
+        while ($data=fread($file_handle, (1024*1024*30))) {  //1024*1024*30 = 30MB
+			iwp_mmb_auto_print('dropbox_chucked_upload');
+            $chunkHandle = fopen('php://memory', 'rw');
+            fwrite($chunkHandle,$data);
+            rewind($chunkHandle);
+            //overwrite progress function
+            if (!empty($this->ProgressFunction) and function_exists($this->ProgressFunction)) {
+                $ProgressFunction=$this->ProgressFunction;
+                $this->ProgressFunction=false;
+            }
+            $url = self::API_CONTENT_URL.self::API_VERSION_URL.'chunked_upload';
+            $output = $this->request($url, array('upload_id' => $uploadid,'offset'=>$offset), 'PUT', $chunkHandle, strlen($data));
+            fclose($chunkHandle);
+            if ($ProgressFunction) {
+                call_user_func($ProgressFunction,0,0,0,$offset);
+                $this->ProgressFunction=$ProgressFunction;
+            }
+            //args for next chunk
+            $offset=$output['offset'];
+            $uploadid=$output['upload_id'];
+            fseek($file_handle,$offset);
+        }
+        fclose($file_handle);
+        $url = self::API_CONTENT_URL.self::API_VERSION_URL.'commit_chunked_upload/'.$this->root.'/'.trim($path, '/');
+        return $this->request($url, array('overwrite' => ($overwrite)? 'true' : 'false','upload_id'=>$uploadid), 'POST');
+    }
+	
+    public function chunked_upload($file, $path = '',$overwrite=true,$uploadid = null,$offset = 0, $readSize = 0, $isCommit = false){//works for multi-call alone
 		
 		$file = str_replace("\\", "/",$file);
         if (!is_readable($file) or !is_file($file))
