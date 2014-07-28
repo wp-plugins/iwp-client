@@ -3980,8 +3980,8 @@ function ftp_backup($historyID,$args = '')
     function postUploadVerification(&$obj, $backup_file, $destFile, $type = "", $as3_bucket = "")
 	{
 		$actual_file_size = iwp_mmb_get_file_size($backup_file);
-		$size1 = $actual_file_size-((0.5) * $actual_file_size);
-		$size2 = $actual_file_size+((0.5) * $actual_file_size);
+		$size1 = $actual_file_size-((0.1) * $actual_file_size);
+		$size2 = $actual_file_size+((0.1) * $actual_file_size);
 		if($type == "dropbox")
 		{
 			$dBoxMetaData = $obj -> metadata($destFile);
@@ -4020,7 +4020,8 @@ function ftp_backup($historyID,$args = '')
 		}
 		else if($type == "ftp")
 		{
-			$ftp_file_size = ftp_size($obj, $destFile);
+			ftp_chdir ($obj , dirname($destFile));
+			$ftp_file_size = ftp_size($obj, basename($destFile));
 			if($ftp_file_size > 0)
 			{
 				if((($ftp_file_size >= $size1 && $ftp_file_size <= $actual_file_size) || ($ftp_file_size <= $size2 && $ftp_file_size >= $actual_file_size) || ($ftp_file_size == $actual_file_size)) && ($ftp_file_size != 0))

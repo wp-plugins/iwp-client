@@ -48,6 +48,9 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog ==
 
+= 1.3.3 =
+* Fix: False "FTP verification failed: File may be corrupted" error.
+
 = 1.3.2 =
 * Fix: Dropbox backup upload in single call more then 50MB file not uploading issue.
 
