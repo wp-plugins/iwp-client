@@ -2,7 +2,7 @@
 Contributors: infinitewp
 Tags: admin, administration, amazon, api, authentication, automatic, dashboard, dropbox, events, integration, manage, multisite, multiple, notification, performance, s3, security, seo, stats, tracking, infinitewp, updates, backup, restore, iwp, infinite
 Requires at least: 3.0
-Tested up to: 3.9.1
+Tested up to: 3.9.2
 Stable tag: trunk
 
 Install this plugin on unlimited sites and manage them all from a central dashboard.
@@ -47,6 +47,12 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 5. One-click updates
 
 == Changelog ==
+
+= 1.3.4 =
+* Feature: Maintenance mode with custom HTML.
+* New: WP site's server info can be viewed.
+* Improvement: Simplified site adding process - One-click copy & paste
+* Improvement: New addons compatibility.
 
 = 1.3.3 =
 * Fix: False "FTP verification failed: File may be corrupted" error.

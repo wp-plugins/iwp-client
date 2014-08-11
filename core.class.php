@@ -178,7 +178,11 @@ class IWP_MMB_Core extends IWP_MMB_Helper
             'put_redirect_url'      =>  'iwp_mmb_gwmt_redirect_url',
             'put_redirect_url_again'=>  'iwp_mmb_gwmt_redirect_url_again',
 			'wordfence_scan' => 'iwp_mmb_wordfence_scan',
-			'wordfence_load' => 'iwp_mmb_wordfence_load'
+			'wordfence_load' => 'iwp_mmb_wordfence_load',
+			'backup_test_site' => 'iwp_mmb_backup_test_site',
+			'ithemes_security_load' => 'iwp_mmb_ithemes_security_load',
+			'get_seo_info' => 'iwp_mmb_yoast_get_seo_info',
+			'save_seo_info' => 'iwp_mmb_yoast_save_seo_info'
 		);
 		
 		add_action('rightnow_end', array( &$this, 'add_right_now_info' ));       
@@ -277,11 +281,48 @@ class IWP_MMB_Core extends IWP_MMB_Helper
 		
 		
 		echo '<div class="updated" style="text-align: center;"><p style="color: green; font-size: 14px; font-weight: bold;">Add this site to IWP Admin panel</p><p>
-		<table border="0" align="center">';
+		<table border="0" align="center" cellpadding="5">';
 		if(!empty($iwp_client_activate_key)){
 			echo '<tr><td align="right">WP-ADMIN URL:</td><td align="left"><strong>'.$notice_display_URL.'</strong></td></tr>
 			<tr><td align="right">ADMIN USERNAME:</td><td align="left"><strong>'.$username.'</strong> (or any admin id)</td></tr>
-			<tr><td align="right">ACTIVATION KEY:</td><td align="left"><strong>'.$iwp_client_activate_key.'</strong></td></tr>';
+            <tr><td align="right">ACTIVATION KEY:</td><td align="left"><strong>'.$iwp_client_activate_key.'</strong></td></tr>
+            <tr id="copy_at_once"><td align="right">To quick add, copy this</td><td align="left" style="position:relative;"><input type="text" style="width:295px;" class="read_creds" readonly value="'.$notice_display_URL.'|^|'.$username.'|^|'.$iwp_client_activate_key.'" /></td></tr>
+            <tr class="only_flash"><td></td><td align="left" style="position:relative;"><div id="copy_details" style="background:#008000;display: inline-block;padding: 4px 10px;border-radius: 5px;color:#fff;font-weight:600;cursor:pointer;">Copy details</div><span class="copy_message" style="display:none;margin-left:10px;color:#008000;">Copied :)</span></td></tr>
+            <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+            <script type="text/javascript" src="'.WP_PLUGIN_URL.'/iwp-client/ZeroClipboard.js"></script>
+            <script type="text/javascript">
+                var hasFlash = function() {
+                    return (typeof navigator.plugins == "undefined" || navigator.plugins.length == 0) ? !!(new ActiveXObject("ShockwaveFlash.ShockwaveFlash")) : navigator.plugins["Shockwave Flash"];
+                };
+                var onhoverMsg = "<span class=\"aftercopy_instruction\" style=\"position: absolute;top: 32px;left:20px;background:#fff;border:1px solid #000;-webkit-border-radius: 5px;-moz-border-radius: 5px;border-radius: 5px;padding:2px;margin:2px;text-align:center;\">Paste this in any field in the Add Website dialogue in the InfiniteWP admin panel.</span>";
+                if(typeof hasFlash() != "undefined"){
+                    var client = new ZeroClipboard( $("#copy_details") );
+                    client.on( "ready", function(event) {
+                        // console.log( "movie is loaded" );
+
+                        client.on( "copy", function(event) {
+                            event.clipboardData.setData("text/plain", $(".read_creds").val());
+                        } );
+
+                        client.on( "aftercopy", function(event) {
+                            // console.log("Copied text to clipboard: " + event.data["text/plain"]);
+                            $(".copy_message").show();
+                            setTimeout("$(\'.copy_message\').hide()",1000);
+                        } );
+                    } );
+
+                    client.on( "error", function(event) {
+                        ZeroClipboard.destroy();
+                    } );
+                    $("#copy_at_once").hide();
+                    $("#copy_details").mouseenter(function(){$(onhoverMsg).appendTo($(this).parent());}).mouseleave(function(){$(".aftercopy_instruction").remove();});
+
+                }else{
+                    $(".only_flash").remove();
+                    $(".read_creds").click(function(){$(this).select();});
+                    $(".read_creds").mouseenter(function(e){$(onhoverMsg).appendTo($(this).parent());}).mouseleave(function(){$(".aftercopy_instruction").remove();});
+                }
+            </script>';
 		}
 		else{
 			echo '<tr><td align="center">Please deactivate and then activate InfiniteWP Client plugin.</td></tr>';
@@ -374,6 +415,22 @@ class IWP_MMB_Core extends IWP_MMB_Helper
         }
         
         return $this->get_file_editor;
+    }
+    
+   
+    /**
+     * Gets an instance of the yoastWpSeo class
+     * 
+     */
+    function wp_get_yoast_seo()
+    {
+        global $iwp_mmb_plugin_dir;
+        require_once("$iwp_mmb_plugin_dir/addons/yoast_wp_seo/yoast_wp_seo.class.php");
+		if (!isset($this->get_yoast_seo)) {
+            $this->get_yoast_seo = new IWP_MMB_YWPSEO();
+        }
+        
+        return $this->get_yoast_seo;
     }
     
 

@@ -4,7 +4,7 @@ Plugin Name: InfiniteWP - Client
 Plugin URI: http://infinitewp.com/
 Description: This is the client plugin of InfiniteWP that communicates with the InfiniteWP Admin panel.
 Author: Revmakx
-Version: 1.3.3
+Version: 1.3.4
 Author URI: http://www.revmakx.com
 */
 /************************************************************
@@ -26,7 +26,7 @@ Author URI: http://www.revmakx.com
  **************************************************************/
 
 if(!defined('IWP_MMB_CLIENT_VERSION'))
-	define('IWP_MMB_CLIENT_VERSION', '1.3.3');
+	define('IWP_MMB_CLIENT_VERSION', '1.3.4');
 	
 
 
@@ -130,6 +130,16 @@ if( !function_exists ('iwp_mmb_parse_request')) {
 			
 			if ($action == 'add_site') {
 				iwp_mmb_add_site($params);
+				iwp_mmb_response(array('error' => 'You should never see this.', 'error_code' => 'you_should_never_see_this'), false);
+			}
+			if ($action == 'readd_site') {
+                                $params['id'] = $id;
+                                $params['signature'] = $signature;
+				iwp_mmb_readd_site($params);
+				iwp_mmb_response(array('error' => 'You should never see this.', 'error_code' => 'you_should_never_see_this'), false);
+			}
+			if ($action == 'maintain_site') {
+				iwp_mmb_maintain_site($params);
 				iwp_mmb_response(array('error' => 'You should never see this.', 'error_code' => 'you_should_never_see_this'), false);
 			}
 
@@ -292,6 +302,85 @@ if( !function_exists ( 'iwp_mmb_add_site' )) {
 		}
 	}
 }
+
+if( !function_exists ( 'iwp_mmb_readd_site' )) {
+	function iwp_mmb_readd_site($params){
+		global $iwp_mmb_core;
+		$num = extract($params);
+		if ($num) {
+			if (!get_option('iwp_client_action_message_id') && !get_option('iwp_client_public_key')) {
+				$public_key = base64_decode($public_key);
+				if(trim($activation_key) != get_option('iwp_client_activate_key')){ //iwp
+					iwp_mmb_response(array('error' => 'Invalid activation key', 'error_code' => 'iwp_mmb_readd_site_invalid_activation_key'), false);
+					return;
+				}
+				if (checkOpenSSL() && !$user_random_key_signing) {
+
+					$verify = openssl_verify($action . $id, $signature, $public_key);
+					if ($verify == 1) {
+						$iwp_mmb_core->set_admin_panel_public_key($public_key);
+						$iwp_mmb_core->set_client_message_id($id);
+						$iwp_mmb_core->get_stats_instance();
+						if(isset($notifications) && is_array($notifications) && !empty($notifications)){
+							$iwp_mmb_core->stats_instance->set_notifications($notifications);
+						}
+						if(isset($brand) && is_array($brand) && !empty($brand)){
+							update_option('iwp_client_brand',$brand);
+						}
+						iwp_mmb_response($iwp_mmb_core->stats_instance->get_initial_stats(), true);
+						delete_option('iwp_client_activate_key');//iwp
+					} else if ($verify == 0) {
+						iwp_mmb_response(array('error' => 'Invalid message signature. Please contact us if you see this message often.', 'error_code' => 'iwp_mmb_readd_site_invalid_message_signature'), false);
+					} else {
+						iwp_mmb_response(array('error' => 'Command not successful. Please try again.', 'error_code' => 'iwp_mmb_readd_site_command_not_successful'), false);
+					}
+				} else {
+					if (!get_option('iwp_client_nossl_key')) {
+						srand();
+
+						$random_key = md5(base64_encode($public_key) . rand(0, getrandmax()));
+
+						$iwp_mmb_core->set_random_signature($random_key);
+						$iwp_mmb_core->set_client_message_id($id);
+						$iwp_mmb_core->set_admin_panel_public_key($public_key);
+						$iwp_mmb_core->get_stats_instance();						
+						if(is_array($notifications) && !empty($notifications)){
+							$iwp_mmb_core->stats_instance->set_notifications($notifications);
+						}
+
+						if(is_array($brand) && !empty($brand)){
+							update_option('iwp_client_brand',$brand);
+						}
+
+						iwp_mmb_response($iwp_mmb_core->stats_instance->get_initial_stats(), true);
+						delete_option('iwp_client_activate_key');//IWP
+					} else
+						iwp_mmb_response(array('error' => 'Please deactivate & activate InfiniteWP Client plugin on your site, then add the site again.', 'error_code' => 'deactivate_ctivate_InfiniteWP_Client_plugin_add_site_again_not_iwp_client_nossl_key'), false);
+				}
+			} else {
+				iwp_mmb_response(array('error' => 'Please deactivate &amp; activate InfiniteWP Client plugin on your site, then add the site again.', 'error_code' => 'deactivate_ctivate_InfiniteWP_Client_plugin_add_site_again_not_iwp_client_nossl_key'), false);
+			}
+		} else {
+			iwp_mmb_response(array('error' => 'Invalid parameters received. Please try again.', 'error_code' => 'iwp_mmb_add_site_invalid_parameters_received'), false);
+		}
+	}
+}
+
+if(!function_exists('iwp_mmb_maintain_site')){
+	function iwp_mmb_maintain_site($params){
+		$check = 1;
+		if(get_option('iwp_mmb_maintenance_mode') != $params['maintenance_mode'])
+			if(update_option('iwp_mmb_maintenance_mode',$params['maintenance_mode']) ){ $check = 1;}else{$check = 0;}
+		if(get_option('iwp_mmb_maintenance_html') != $params['maintenance_html'])
+			if(update_option('iwp_mmb_maintenance_html',$params['maintenance_html']) ){ $check = 1;}else{$check = 0;}
+		if($check == 1){
+			iwp_mmb_response($params, true);
+		}else{
+			iwp_mmb_response(array('error' => 'Some error with database connection in client site', 'error_code' => 'database_connection_in_client_site'), false);
+		}
+	}
+}
+
 
 if( !function_exists ( 'iwp_mmb_remove_site' )) {
 	function iwp_mmb_remove_site($params)
@@ -1076,6 +1165,53 @@ if( !function_exists('iwp_mmb_wordfence_load')){
  *WordFence Addon End 
  */
 
+
+/*
+ * iTheams Security Addon Start here
+ */
+
+if(!function_exists('iwp_mmb_ithemes_security_load')) {
+    function iwp_mmb_ithemes_security_load() {
+        if(_check_ithemes_security()) {
+            include_once(ABSPATH . "wp-includes/pluggable.php"); 
+            //$ITSECdashboard = new ITSEC_Dashboard_Admin( new ITSEC_Core(WP_PLUGIN_DIR . '/better-wp-security/better-wp-security.php', __( 'iThemes Security', 'it-l10n-better-wp-security' )) );
+            //add_action( 'itsec_add_admin_meta_boxes', array( $ITSECdashboard, 'add_admin_meta_boxes' ) );
+            $statuses = array(
+			'safe-high'   => array(),
+			'high'        => array(),
+			'safe-medium' => array(),
+			'medium'      => array(),
+			'safe-low'    => array(),
+			'low'         => array(),
+		);
+
+		$statuses = apply_filters( 'itsec_add_dashboard_status', $statuses );
+                iwp_mmb_response($statuses, true);
+        }
+    }
+}
+
+/*
+* Private function, Will return the iTheams Security is load or not
+*/
+function _check_ithemes_security() {
+      include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+      if ( is_plugin_active( 'better-wp-security/better-wp-security.php' ) ) {
+              @include_once(WP_PLUGIN_DIR . '/better-wp-security/better-wp-security.php');
+              if (class_exists('ITSEC_Core')) {
+                    return true;
+              } else {
+                    return false;
+              }
+      } else {
+            return false;
+      }
+}
+
+/*
+ * iTheams Security Addon End here
+ */
+
 //WP-BrokenLinks start
 
 if( !function_exists('iwp_mmb_get_all_links')){
@@ -1219,6 +1355,33 @@ if( !function_exists('iwp_mmb_file_editor_upload')){
 
 
 //fileEditor end
+
+//yoastWpSeo start
+if( !function_exists('iwp_mmb_yoast_get_seo_info')){
+	function iwp_mmb_yoast_get_seo_info($params){
+		global $iwp_mmb_core;
+		$iwp_mmb_core->wp_get_yoast_seo();
+		$return = $iwp_mmb_core->get_yoast_seo->get_seo_info($params);
+		if (is_array($return) && array_key_exists('error', $return))
+			iwp_mmb_response($return, false);
+		else {
+			iwp_mmb_response($return, true);
+		}
+	}
+}
+if( !function_exists('iwp_mmb_yoast_save_seo_info')){
+	function iwp_mmb_yoast_save_seo_info($params){
+		global $iwp_mmb_core;
+		$iwp_mmb_core->wp_get_yoast_seo();
+		$return = $iwp_mmb_core->get_yoast_seo->save_seo_info($params);
+		if (is_array($return) && array_key_exists('error', $return))
+			iwp_mmb_response($return, false);
+		else {
+			iwp_mmb_response($return, true);
+		}
+	}
+}
+//yoastWpSeo end
 
 if( !function_exists('iwp_mmb_maintenance_mode')){
  	function iwp_mmb_maintenance_mode( $params ) {
@@ -1381,6 +1544,17 @@ if(!function_exists('iwp_mmb_auto_print')){
 			$print_string = $unique_task." TT:".($current_time - $GLOBALS['IWP_MMB_PROFILING']['TASKS'][$unique_task]['START']);
 			iwp_mmb_print_flush($print_string);
 			$GLOBALS['IWP_MMB_PROFILING']['LAST_PRINT'] = $current_time;		
+		}
+	}
+}
+
+if(!function_exists('iwp_mmb_check_maintenance')){
+	function iwp_mmb_check_maintenance(){
+		global $wpdb;
+		if(get_option('iwp_mmb_maintenance_mode')){
+			$html_maintenance = get_option('iwp_mmb_maintenance_html');
+			echo $html_maintenance;
+			exit;
 		}
 	}
 }
@@ -1549,6 +1723,22 @@ if(!function_exists('iwp_mmb_get_file_size')){
 	}
 }
 
+if( !function_exists('iwp_mmb_backup_test_site')){
+	function iwp_mmb_backup_test_site($params){
+		global $iwp_mmb_core,$iwp_mmb_plugin_dir;
+                $return = array();
+                
+                $iwp_mmb_core->get_backup_instance();
+		$return = $iwp_mmb_core->backup_instance->check_backup_compat($params);
+                
+		if (is_array($return) && array_key_exists('error', $return))
+			iwp_mmb_response($return, false);
+		else {
+			iwp_mmb_response($return, true);
+		}
+	}
+}
+
 //add_action( 'plugins_loaded', 'iwp_mmb_create_backup_table' );
 
 //register_activation_hook( __FILE__, 'iwp_mmb_create_backup_table' );
@@ -1567,6 +1757,9 @@ if (function_exists('register_deactivation_hook'))
 
 if (function_exists('add_action'))
 	add_action('init', 'iwp_mmb_plugin_actions', 99999);
+
+if (function_exists('add_action'))
+	add_action('wp_head', 'iwp_mmb_check_maintenance', 99999);
 
 if (function_exists('add_action'))
 	add_action('wp_head', 'iwp_mmb_check_redirects', 99999);

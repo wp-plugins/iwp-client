@@ -1862,76 +1862,415 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
             $unzip = "unzip";
         return $unzip;
     }
+    function getDirectorySize($directory)
+    {
+        $dirSize=0;
+        $fileCount=0;
+        $dirInfo = array(
+            'dirSize'   =>  0,
+            'fileCount' =>  0
+        );
+
+        if(!$dh=opendir($directory))
+        {
+            return false;
+        }
+
+        while($file = readdir($dh))
+        {
+            if($file == "." || $file == "..")
+            {
+                continue;
+            }
+
+            if(is_file($directory."/".$file))
+            {
+                $dirInfo['dirSize'] += filesize($directory."/".$file);
+                $dirInfo['fileCount'] += 1;
+            }
+
+            if(is_dir($directory."/".$file))
+            {
+                $teminfo = $this->getDirectorySize($directory."/".$file);
+                if(isset($teminfo['dirSize'])) $dirInfo['dirSize'] += $teminfo['dirSize'];
+                if(isset($teminfo['fileCount'])) $dirInfo['fileCount'] += $teminfo['fileCount'];
+            }
+        }
+
+        closedir($dh);
+
+        return $dirInfo;
+    }
+    
+    function get_database_size() {
+        global $wpdb;
+        
+        $total_size = 0;
+            $total_size_with_exclusions = 0;
+            $rows = $wpdb->get_results( "SHOW TABLE STATUS", ARRAY_A );
+            foreach( $rows as $row ) {
+                    $excluded = true; // Default.
+
+                    // TABLE STATUS.
+                    $rowsb = $wpdb->get_results( "CHECK TABLE `{$row['Name']}`", ARRAY_A );
+                    foreach( $rowsb as $rowb ) {
+                            if ( $rowb['Msg_type'] == 'status' ) {
+                                    $status = $rowb['Msg_text'];
+                            }
+                    }
+                    unset( $rowsb );
+
+                    // TABLE SIZE.
+                    $size = ( $row['Data_length'] + $row['Index_length'] );
+                    $total_size += $size;
+            }
+            return $total_size;
+    }
+    
+     function loopback_test() {
+            $loopback_url = admin_url('admin-ajax.php');
+            //pb_backupbuddy::status( 'details', 'Testing loopback connections by connecting back to site at the URL: `' . $loopback_url . '`. It should display simply "0" or "-1" in the body.' );
+
+            $response = wp_remote_get(
+                    $loopback_url,
+                    array(
+                            'method' => 'GET',
+                            'timeout' => 8, // X second delay. A loopback should be very fast.
+                            'redirection' => 5,
+                            'httpversion' => '1.0',
+                            'blocking' => true,
+                            'headers' => array(),
+                            'body' => null,
+                            'cookies' => array()
+                    )
+            );
+
+            if( is_wp_error( $response ) ) { // Loopback failed. Some kind of error.
+                    $error = $response->get_error_message();
+                    //pb_backupbuddy::status( 'error', 'Loopback test error: `' . $error . '`.' );
+                    return 'Error: ' . $error;
+            } else {
+                    if ( ( $response['body'] == '-1' ) || ( $response['body'] == '0' ) ) { // Loopback succeeded.
+                            //pb_backupbuddy::status( 'details', 'HTTP Loopback test success. Returned `' . $response['body'] . '`.' );
+                            return true;
+                    } else { // Loopback failed.
+                            $error = 'Connected to server but unexpected output: ' . htmlentities( $response['body'] );
+                            //pb_backupbuddy::status( 'error', $error );
+                            return $error;
+                    }
+            }
+    }
+    
+    function is_php( $bits ) {
+		
+            $result = ( ( PHP_INT_SIZE * 8 ) == $bits ) ? true : false;
+
+            return $result;
+
+    }
+    
+    function stat( $filename ) {
+		
+                $result = false;
+
+                // If the file is readable then we should be able to stat it 
+                if ( @is_readable( $filename ) ) {
+
+                        $stats = @stat( $filename );
+
+                        if ( false !== $stats ) {
+
+                                // Looks like we got some valid data - for now just process the size
+                                if ( $this->is_php( 32 ) ) {
+
+                                        // PHP is 32 bits so we may have a file size problem over 2GB.
+                                        // This is one way to test for a file size problem - there are others
+                                        if ( 0 > $stats[ 'size' ] ) {
+
+                                                // Unsigned long has been interpreted as a signed int and has sign bit
+                                                // set so is appearing as negative - magically convert it to a double
+                                                // Note: this only works to give us an extension from 2GB to 4GB but that
+                                                // should be enough as the underlying OS probably can't support >4GB or
+                                                // zip command cannot anyway
+                                                $stats[ 'dsize' ] = ( (double)0x80000000 + ( $stats[ 'size' ] & 0x7FFFFFFF ) );
+
+                                        } else {
+
+                                                // Assume it's valid
+                                                $stats[ 'dsize' ] = (double)$stats[ 'size' ];
+
+                                        }
+
+                                } else {
+
+                                        // Looks like 64 bit PHP so file size should be fine
+                                        // Force added item to double for consistency
+                                        $stats[ 'dsize' ] = (double)$stats[ 'size' ];
+
+                                }
+
+                                // Add an additional item for short octal representation of mode
+                                $stats[ 'mode_octal_four' ] = substr( sprintf( '%o', $stats[ 'mode' ] ), -4 );
+
+                                $result = $stats;
+
+                        } else {
+
+                                // Hmm, stat() failed for some reason - could be an LFS problem with the
+                                // way PHP has been built :-(
+                                // TODO: Consider alternatives - may be able to use exec to run the
+                                // command line stat function which _should_ be ok and we can map output
+                                // into the same array format. This does depend on having exec() and the
+                                // stat command available and it's definitely not a nice option
+                                $result = false;
+
+                        }
+
+                }
+
+                return $result;
+        }
+
+   
+    function getDirectoryInfo() {
+        $tests = array();
+
+        $uploads_dirs = wp_upload_dir();
+        $directories = array(
+                ABSPATH . '',
+                ABSPATH . 'wp-includes/',
+                ABSPATH . 'wp-admin/',
+                ABSPATH . 'wp-content/themes/',
+                ABSPATH . 'wp-content/plugins/',
+                ABSPATH . 'wp-content/',
+                rtrim( $uploads_dirs['basedir'], '\\/' ) . '/',
+                ABSPATH . 'wp-includes/',
+
+        );
+        
+        foreach( $directories as $directory ) {
+	
+            $mode_octal_four = '<i>Unknown</i>';
+            $owner = '<i>Unknown</i>';
+
+            $stats = $this->stat( $directory );
+            if ( false !== $stats ) {
+                    $mode_octal_four = $stats['mode_octal_four'];
+                    $owner = $stats['uid'] . ':' . $stats['gid'];
+            }
+            $this_test = array(
+                                            'title'			=>		'/' . str_replace( ABSPATH, '', $directory ),
+                                            'suggestion'	=>		'<= 755',
+                                            'value'			=>		$mode_octal_four,
+                                            'owner'			=>		$owner,
+                                    );
+            if ( false === $stats || $mode_octal_four > 755 ) {
+                    $this_test['status'] = 'WARNING';
+            } else {
+                    $this_test['status'] = 'OK';
+            }
+            array_push( $tests, $this_test );
+
+    } // end foreach.
+    return $tests;
+        
+    }
     
     function check_backup_compat()
     {
+        global $wpdb;
         $reqs = array();
+        $reqs['serverInfo']['server_os']['name'] = 'Server OS';
         if (strpos($_SERVER['DOCUMENT_ROOT'], '/') === 0) {
-            $reqs['Server OS']['status'] = 'Linux (or compatible)';
-            $reqs['Server OS']['pass']   = true;
+            $reqs['serverInfo']['server_os']['status'] = php_uname('s')." ".php_uname('v');
+            $reqs['serverInfo']['server_os']['pass']   = true;
         } else {
-            $reqs['Server OS']['status'] = 'Windows';
-            $reqs['Server OS']['pass']   = true;
-            $pass                        = false;
+            $reqs['serverInfo']['server_os']['status'] = php_uname('s')." ".php_uname('v');
+            $reqs['serverInfo']['server_os']['pass']   = 'ok';
         }
-        $reqs['PHP Version']['status'] = phpversion();
+        $reqs['serverInfo']['server_os']['suggeted'] = 'Linux';
+        
+        $reqs['serverInfo']['php_version']['name'] = 'PHP Version';
+        $reqs['serverInfo']['php_version']['status'] = phpversion();
+        $reqs['serverInfo']['php_version']['suggeted'] = '>= 5.2 (5.2.16+ best)';
         if ((float) phpversion() >= 5.1) {
-            $reqs['PHP Version']['pass'] = true;
+            $reqs['serverInfo']['php_version']['pass'] = true;
         } else {
-            $reqs['PHP Version']['pass'] = false;
-            $pass                        = false;
+            $reqs['serverInfo']['php_version']['pass'] = false;
         }
         
+        $reqs['mysqlInfo']['mysql_version']['name'] = 'MySql Version';
+        $reqs['mysqlInfo']['mysql_version']['status'] = $wpdb->db_version();
+        $reqs['mysqlInfo']['mysql_version']['suggeted'] = '>= 5.0';
         
+        if ((float) $wpdb->db_version() >= 5.0) {
+            $reqs['mysqlInfo']['mysql_version']['pass'] = true;
+        } else {
+            $reqs['mysqlInfo']['mysql_version']['pass'] = false;
+        }
+        
+        $reqs['serverInfo']['php_max_execution_time']['name'] = 'PHP max_execution_time';
+        $reqs['serverInfo']['php_max_execution_time']['status'] = ini_get( 'max_execution_time' );
+        $reqs['serverInfo']['php_max_execution_time']['suggeted'] = '>= 30 seconds (30+ best)';
+        
+        if (str_ireplace( 's', '', ini_get( 'max_execution_time' ) ) < 30) {
+            $reqs['serverInfo']['php_max_execution_time']['pass'] = false;
+        } else {
+            $reqs['serverInfo']['php_max_execution_time']['pass'] = true;
+        }
+        
+        if ( !ini_get( 'memory_limit' ) ) {
+		$parent_class_val = 'unknown';
+	} else {
+		$parent_class_val = ini_get( 'memory_limit' );
+	}
+        $reqs['serverInfo']['php_memory_limit']['name'] = 'PHP Memory Limit';
+        $reqs['serverInfo']['php_memory_limit']['status'] = $parent_class_val;
+        $reqs['serverInfo']['php_memory_limit']['suggeted'] = '>= 128M (256M+ best)';
+        
+        if ( preg_match( '/(\d+)(\w*)/', $parent_class_val, $matches ) ) {
+		$parent_class_val = $matches[1];
+		$unit = $matches[2];
+		// Up memory limit if currently lower than 256M.
+		if ( 'g' !== strtolower( $unit ) ) {
+			if ( ( $parent_class_val < 128 ) || ( 'm' !== strtolower( $unit ) ) ) {
+				$reqs['serverInfo']['php_memory_limit']['pass'] = false;
+			} else {
+				$reqs['serverInfo']['php_memory_limit']['pass'] = true;
+			}
+		}
+	} else {
+		$reqs['serverInfo']['php_memory_limit']['pass'] = false;
+	}
+        
+        //$reqs['serverInfo']['Site Information']['status'] = $this->getDirectorySize(ABSPATH);
+        $tempInfo = $this->getDirectorySize(ABSPATH);
+        
+        
+        $reqs['serverInfo']['site_size']['name'] = 'Site size';
+        $reqs['serverInfo']['site_size']['status'] = ($tempInfo['dirSize']/1048576). " MB";
+        $reqs['serverInfo']['site_size']['pass'] = true;
+        $reqs['serverInfo']['site_size']['suggeted'] = 'N/A';
+        
+        $reqs['serverInfo']['site_number_of_files']['name'] = 'Site number of files';
+        $reqs['serverInfo']['site_number_of_files']['status'] = $tempInfo['fileCount'];
+        $reqs['serverInfo']['site_number_of_files']['pass'] = true;
+        $reqs['serverInfo']['site_number_of_files']['suggeted'] = 'N/A';
+        
+        $reqs['mysqlInfo']['database_size']['name'] = 'Database Size';
+        $reqs['mysqlInfo']['database_size']['status'] = $this->get_database_size();
+        $reqs['mysqlInfo']['database_size']['pass'] = true;
+        $reqs['mysqlInfo']['database_size']['suggeted'] = 'N/A';
+        
+        $reqs['serverInfo']['http_loopback']['name'] = 'Http Loopbacks';
+        if($this->loopback_test() === true) {
+            $reqs['serverInfo']['http_loopback']['status'] = true;
+            $reqs['serverInfo']['http_loopback']['pass'] = true;
+        } else {
+            $reqs['serverInfo']['http_loopback']['status'] = false;
+            $reqs['serverInfo']['http_loopback']['pass'] = false;
+        }
+        $reqs['serverInfo']['http_loopback']['suggeted'] = "enabled";
+        
+        $reqs['serverInfo']['php_architecture']['name'] = 'PHP Architecture';
+        $reqs['serverInfo']['php_architecture']['status'] = ( PHP_INT_SIZE * 8 ) . '-bit';
+        $reqs['serverInfo']['php_architecture']['pass'] = true;
+        $reqs['serverInfo']['php_architecture']['suggeted'] = '64-bit';
+        
+        // http Server Software
+	if ( isset( $_SERVER['SERVER_SOFTWARE'] ) ) {
+		$server_software = $_SERVER['SERVER_SOFTWARE'];
+	} else {
+		$server_software = 'Unknown';
+	}
+        $reqs['serverInfo']['http_server_software']['name'] = 'Http Server Software';
+        $reqs['serverInfo']['http_server_software']['status'] = $server_software;
+        $reqs['serverInfo']['http_server_software']['pass'] = true;
+        $reqs['serverInfo']['http_server_software']['suggeted'] = 'N/A';
+        
+        $reqs['directoryInfo']['status'] = $this->getDirectoryInfo();
+        
+
+        
+        $reqs['serverInfo']['backup_folder']['name'] = "Backup Folder";
         if (is_writable(WP_CONTENT_DIR)) {
-            $reqs['Backup Folder']['status'] = "writable";
-            $reqs['Backup Folder']['pass']   = true;
+            $reqs['serverInfo']['backup_folder']['status'] = "writable";
+            $reqs['serverInfo']['backup_folder']['pass']   = true;
         } else {
-            $reqs['Backup Folder']['status'] = "not writable";
-            $reqs['Backup Folder']['pass']   = false;
+            $reqs['serverInfo']['backup_folder']['status'] = "not writable";
+            $reqs['serverInfo']['backup_folder']['pass']   = false;
         }
+        $reqs['serverInfo']['backup_folder']['suggeted'] = 'Need to writiable';
         
         
         $file_path = IWP_BACKUP_DIR;
-        $reqs['Backup Folder']['status'] .= ' (' . $file_path . ')';
+        $reqs['serverInfo']['backup_folder']['status'] .= ' (' . $file_path . ')';
         
+        $reqs['serverInfo']['execute_function']['name'] = 'Execute Function';
         if ($func = $this->check_sys()) {
-            $reqs['Execute Function']['status'] = $func;
-            $reqs['Execute Function']['pass']   = true;
+            $reqs['serverInfo']['execute_function']['status'] = $func;
+            $reqs['serverInfo']['execute_function']['pass']   = true;
         } else {
-            $reqs['Execute Function']['status'] = "not found";
-            $reqs['Execute Function']['info']   = "(will try PHP replacement)";
-            $reqs['Execute Function']['pass']   = false;
+            $reqs['serverInfo']['execute_function']['status'] = "not found";
+            $reqs['serverInfo']['execute_function']['pass']   = false;
         }
-        $reqs['Zip']['status'] = $this->get_zip();
+        $reqs['serverInfo']['execute_function']['suggeted']   = 'Need any one of support exec, system, passhtru (or will try PHP replacement)';
+        $reqs['serverInfo']['zip']['name'] = 'Zip';
+        $reqs['serverInfo']['zip']['status'] = $this->get_zip();
+        $reqs['serverInfo']['zip']['suggeted']   = 'System Zip need or will try PHP replacement';
+        $reqs['serverInfo']['zip']['pass'] = true;
         
-        $reqs['Zip']['pass'] = true;
         
         
-        
-        $reqs['Unzip']['status'] = $this->get_unzip();
-        
-        $reqs['Unzip']['pass'] = true;
+        $reqs['serverInfo']['unzip']['name'] = 'Unzip';
+        $reqs['serverInfo']['unzip']['status'] = $this->get_unzip();
+        $reqs['serverInfo']['unzip']['suggeted'] = 'System Zip need or will try PHP replacement';
+        $reqs['serverInfo']['unzip']['pass'] = true;
         
         $paths = $this->check_mysql_paths();
-        
+        $reqs['mysqlInfo']['mysql_dump']['name'] = 'MySQL Dump';
         if (!empty($paths['mysqldump'])) {
-            $reqs['MySQL Dump']['status'] = $paths['mysqldump'];
-            $reqs['MySQL Dump']['pass']   = true;
+            $reqs['mysqlInfo']['mysql_dump']['status'] = $paths['mysqldump'];
+            $reqs['mysqlInfo']['mysql_dump']['pass']   = true;
         } else {
-            $reqs['MySQL Dump']['status'] = "not found";
-            $reqs['MySQL Dump']['info']   = "(will try PHP replacement)";
-            $reqs['MySQL Dump']['pass']   = false;
+            $reqs['mysqlInfo']['mysql_dump']['status'] = "not found";
+            $reqs['mysqlInfo']['mysql_dump']['pass']   = false;
         }
+        $reqs['mysqlInfo']['mysql_dump']['suggeted']   = "Command line [fastest] > PHP-based [slowest] (or will try PHP replacement)";
         
         $exec_time                        = ini_get('max_execution_time');
-        $reqs['Execution time']['status'] = $exec_time ? $exec_time . "s" : 'unknown';
-        $reqs['Execution time']['pass']   = true;
+        $reqs['serverInfo']['mysql_dump']['name'] = 'Execution time';
+        $reqs['serverInfo']['mysql_dump']['status'] = $exec_time ? $exec_time . "s" : 'unknown';
+        $reqs['serverInfo']['mysql_dump']['pass']   = true;
+        $reqs['serverInfo']['mysql_dump']['suggeted']   = 'N/A';
         
         $mem_limit                      = ini_get('memory_limit');
-        $reqs['Memory limit']['status'] = $mem_limit ? $mem_limit : 'unknown';
-        $reqs['Memory limit']['pass']   = true;
+        $reqs['serverInfo']['memory_limit']['name'] = 'Memory limit';
+        $reqs['serverInfo']['memory_limit']['status'] = $mem_limit ? $mem_limit : 'unknown';
+        $reqs['serverInfo']['memory_limit']['pass']   = true;
+        $reqs['serverInfo']['memory_limit']['suggeted']   = 'N/A';
         
+        $reqs['functionList']['file_put_content']['name'] = "File Put Content";
+        if(function_exists('file_put_contents')) {
+            $reqs['functionList']['file_put_content']['status'] = "Available";
+            $reqs['functionList']['file_put_content']['pass'] = true;
+        } else {
+            $reqs['functionList']['file_put_content']['status'] = "Not Available";
+            $reqs['functionList']['file_put_content']['pass'] = false;
+            
+        }
+        $reqs['functionList']['file_put_content']['suggeted']   = 'N/A';
+        
+        $reqs['functionList']['ftp_functions']['name'] = "FTP Funtions";
+        if(function_exists('ftp_connect')) {
+            $reqs['functionList']['ftp_functions']['status'] = "Available";
+            $reqs['functionList']['ftp_functions']['pass'] = true;
+        } else {
+            $reqs['functionList']['ftp_functions']['status'] = "Not Available";
+            $reqs['functionList']['ftp_functions']['pass'] = false;
+            $reqs['functionList']['ftp_functions']['pass'] = false;
+        }
+        $reqs['functionList']['ftp_functions']['suggeted']   = 'N/A';
         
         return $reqs;
     }
