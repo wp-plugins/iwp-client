@@ -4,7 +4,7 @@ Plugin Name: InfiniteWP - Client
 Plugin URI: http://infinitewp.com/
 Description: This is the client plugin of InfiniteWP that communicates with the InfiniteWP Admin panel.
 Author: Revmakx
-Version: 1.3.4
+Version: 1.3.5
 Author URI: http://www.revmakx.com
 */
 /************************************************************
@@ -26,7 +26,7 @@ Author URI: http://www.revmakx.com
  **************************************************************/
 
 if(!defined('IWP_MMB_CLIENT_VERSION'))
-	define('IWP_MMB_CLIENT_VERSION', '1.3.4');
+	define('IWP_MMB_CLIENT_VERSION', '1.3.5');
 	
 
 
@@ -47,12 +47,12 @@ require_once("$iwp_mmb_plugin_dir/helper.class.php");
 require_once("$iwp_mmb_plugin_dir/core.class.php");
 require_once("$iwp_mmb_plugin_dir/stats.class.php");
 //require_once("$iwp_mmb_plugin_dir/backup.class.php");
-require_once("$iwp_mmb_plugin_dir/backup.class.singlecall.php");
-require_once("$iwp_mmb_plugin_dir/backup.class.multicall.php");
+//require_once("$iwp_mmb_plugin_dir/backup.class.singlecall.php");
+//require_once("$iwp_mmb_plugin_dir/backup.class.multicall.php");
 require_once("$iwp_mmb_plugin_dir/installer.class.php");
 
 require_once("$iwp_mmb_plugin_dir/addons/manage_users/user.class.php");
-require_once("$iwp_mmb_plugin_dir/addons/backup_repository/backup_repository.class.php");
+//require_once("$iwp_mmb_plugin_dir/addons/backup_repository/backup_repository.class.php");
 require_once("$iwp_mmb_plugin_dir/addons/comments/comments.class.php");
 
 require_once("$iwp_mmb_plugin_dir/addons/post_links/link.class.php");
@@ -1172,7 +1172,7 @@ if( !function_exists('iwp_mmb_wordfence_load')){
 
 if(!function_exists('iwp_mmb_ithemes_security_load')) {
     function iwp_mmb_ithemes_security_load() {
-        if(_check_ithemes_security()) {
+        if(iwp_mmb_ithemes_security_check()) {
             include_once(ABSPATH . "wp-includes/pluggable.php"); 
             //$ITSECdashboard = new ITSEC_Dashboard_Admin( new ITSEC_Core(WP_PLUGIN_DIR . '/better-wp-security/better-wp-security.php', __( 'iThemes Security', 'it-l10n-better-wp-security' )) );
             //add_action( 'itsec_add_admin_meta_boxes', array( $ITSECdashboard, 'add_admin_meta_boxes' ) );
@@ -1192,20 +1192,31 @@ if(!function_exists('iwp_mmb_ithemes_security_load')) {
 }
 
 /*
-* Private function, Will return the iTheams Security is load or not
+* return the iTheams Security is load or not
 */
-function _check_ithemes_security() {
-      include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
-      if ( is_plugin_active( 'better-wp-security/better-wp-security.php' ) ) {
-              @include_once(WP_PLUGIN_DIR . '/better-wp-security/better-wp-security.php');
-              if (class_exists('ITSEC_Core')) {
-                    return true;
-              } else {
-                    return false;
-              }
-      } else {
-            return false;
-      }
+if(!function_exists('iwp_mmb_ithemes_security_check')) {
+	function iwp_mmb_ithemes_security_check() {
+		  include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+		  if ( is_plugin_active( 'better-wp-security/better-wp-security.php' ) ) {
+				  @include_once(WP_PLUGIN_DIR . '/better-wp-security/better-wp-security.php');
+				  if (class_exists('ITSEC_Core')) {
+						return true;
+				  } else {
+						return false;
+				  }
+		  }
+		  elseif ( is_plugin_active( 'ithemes-security-pro/ithemes-security-pro.php' ) ) {
+				  @include_once(WP_PLUGIN_DIR . '/ithemes-security-pro/ithemes-security-pro.php');
+				  if (class_exists('ITSEC_Core')) {
+						return true;
+				  } else {
+						return false;
+				  }
+		  }
+		  else {
+				return false;
+		  }
+	}
 }
 
 /*

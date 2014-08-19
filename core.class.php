@@ -557,6 +557,8 @@ class IWP_MMB_Core extends IWP_MMB_Helper
      */
     function get_backup_instance($mechanism='')
     {
+		require_once($GLOBALS['iwp_mmb_plugin_dir']."/backup.class.singlecall.php");
+		require_once($GLOBALS['iwp_mmb_plugin_dir']."/backup.class.multicall.php");
 		//$mechanism = 'multiCall';
         if (!isset($this->backup_instance)) {
 			if($mechanism == 'singleCall' || $mechanism == ''){
@@ -576,7 +578,9 @@ class IWP_MMB_Core extends IWP_MMB_Helper
 
 	function get_backup_repository_instance()
     {
-        if (!isset($this->backup_repository_instance)) {
+        require_once($GLOBALS['iwp_mmb_plugin_dir']."/backup.class.singlecall.php");
+		require_once($GLOBALS['iwp_mmb_plugin_dir']."/backup.class.multicall.php");
+		if (!isset($this->backup_repository_instance)) {
             $this->backup_repository_instance = new IWP_MMB_Backup_Repository();
         }
         

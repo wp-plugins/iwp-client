@@ -48,10 +48,15 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog ==
 
+= 1.3.5 =
+* Improvement: Support for iThemes Security Pro.
+* Fix: IWP's PCLZIP clash with other plugins.
+
+
 = 1.3.4 =
 * Feature: Maintenance mode with custom HTML.
 * New: WP site's server info can be viewed.
-* Improvement: Simplified site adding process - One-click copy & paste
+* Improvement: Simplified site adding process - One-click copy & paste.
 * Improvement: New addons compatibility.
 
 = 1.3.3 =

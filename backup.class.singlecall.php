@@ -81,7 +81,8 @@ class IWP_MMB_Backup_Singlecall extends IWP_MMB_Core
     var $dropbox;
     function __construct()
     {
-        parent::__construct();
+        require_once $GLOBALS['iwp_mmb_plugin_dir'].'/pclzip.class.php';
+		parent::__construct();
         $this->site_name = str_replace(array(
             "_",
             "/",

@@ -28,10 +28,6 @@ if(!defined('PCLZIP_TEMPORARY_DIR')){
 define('PCLZIP_TEMPORARY_DIR', WP_CONTENT_DIR . '/infinitewp/temp/');
 }
 
-//require_once $GLOBALS['iwp_mmb_plugin_dir'].'/pclzip.class.split.php';
-require_once $GLOBALS['iwp_mmb_plugin_dir'].'/pclzip.class.php';
-
-
 
 $zip_errors   = array(
     'No error',
@@ -90,7 +86,10 @@ class IWP_MMB_Backup_Multicall extends IWP_MMB_Core
 	var $iwpScriptStartTime;
     function __construct()
     {
-        parent::__construct();
+        
+		//require_once $GLOBALS['iwp_mmb_plugin_dir'].'/pclzip.class.split.php';
+		require_once $GLOBALS['iwp_mmb_plugin_dir'].'/pclzip.class.php';
+		parent::__construct();
         $this->site_name = str_replace(array(
             "_",
             "/",
