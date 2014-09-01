@@ -25,8 +25,8 @@ if(!defined('IWP_DB_DIR')){
 define('IWP_DB_DIR', IWP_BACKUP_DIR . '/iwp_db');
 }
 
-if(!defined('PCLZIP_TEMPORARY_DIR')){
-define('PCLZIP_TEMPORARY_DIR', WP_CONTENT_DIR . '/infinitewp/temp/');
+if(!defined('IWP_PCLZIP_TEMPORARY_DIR')){
+define('IWP_PCLZIP_TEMPORARY_DIR', WP_CONTENT_DIR . '/infinitewp/temp/');
 }
 
 $zip_errors   = array(
@@ -230,22 +230,22 @@ function delete_task_now($task_name){
 		
 		//pclzip temp folder creation
 		
-		if(!(file_exists(PCLZIP_TEMPORARY_DIR) && is_dir(PCLZIP_TEMPORARY_DIR)))
+		if(!(file_exists(IWP_PCLZIP_TEMPORARY_DIR) && is_dir(IWP_PCLZIP_TEMPORARY_DIR)))
 		{
-			$mkdir = @mkdir(PCLZIP_TEMPORARY_DIR, 0755, true);
+			$mkdir = @mkdir(IWP_PCLZIP_TEMPORARY_DIR, 0755, true);
 			if(!$mkdir){
-				return array('error' => 'Error creating database backup folder (' . PCLZIP_TEMPORARY_DIR . '). Make sure you have corrrect write permissions.');
+				return array('error' => 'Error creating database backup folder (' . IWP_PCLZIP_TEMPORARY_DIR . '). Make sure you have corrrect write permissions.');
 			}
 		}
-		if(is_writable(PCLZIP_TEMPORARY_DIR))
+		if(is_writable(IWP_PCLZIP_TEMPORARY_DIR))
 		{
-			@file_put_contents(PCLZIP_TEMPORARY_DIR . '/index.php', ''); //safe	
+			@file_put_contents(IWP_PCLZIP_TEMPORARY_DIR . '/index.php', ''); //safe	
 		}
 		else
 		{
-			$chmod = chmod(PCLZIP_TEMPORARY_DIR, 777);
-			if(!is_writable(PCLZIP_TEMPORARY_DIR)){
-				return array('error' => PCLZIP_TEMPORARY_DIR.' directory is not writable. Please set 755 or 777 file permission and try again.');
+			$chmod = chmod(IWP_PCLZIP_TEMPORARY_DIR, 777);
+			if(!is_writable(IWP_PCLZIP_TEMPORARY_DIR)){
+				return array('error' => IWP_PCLZIP_TEMPORARY_DIR.' directory is not writable. Please set 755 or 777 file permission and try again.');
 			}
 		}
            
@@ -728,7 +728,7 @@ function delete_task_now($task_name){
 		//$this->back_hack($task_name, 'Files ZIP PCL: Start');
 				iwp_mmb_print_flush('Files ZIP PCL: Start');
 				if (!isset($archive)) {
-					//define('PCLZIP_TEMPORARY_DIR', IWP_BACKUP_DIR . '/');
+					//define('IWP_PCLZIP_TEMPORARY_DIR', IWP_BACKUP_DIR . '/');
 					//require_once ABSPATH . '/wp-admin/includes/class-pclzip.php';
 					require_once $GLOBALS['iwp_mmb_plugin_dir'].'/pclzip.class.php';
 					$archive = new IWPPclZip($backup_file);
@@ -774,16 +774,16 @@ function delete_task_now($task_name){
 				}
 				
 				if($fail_safe_files && $disable_comp){
-					$result = $archive->add($include_data, PCLZIP_OPT_REMOVE_PATH, ABSPATH, PCLZIP_OPT_IWP_EXCLUDE, $exclude_data, PCLZIP_OPT_NO_COMPRESSION, PCLZIP_OPT_TEMP_FILE_THRESHOLD, 1);
+					$result = $archive->add($include_data, IWP_PCLZIP_OPT_REMOVE_PATH, ABSPATH, IWP_PCLZIP_OPT_IWP_EXCLUDE, $exclude_data, IWP_PCLZIP_OPT_NO_COMPRESSION, IWP_PCLZIP_OPT_TEMP_FILE_THRESHOLD, 1);
 				}
 				elseif(!$fail_safe_files && $disable_comp){
-					$result = $archive->add($include_data, PCLZIP_OPT_REMOVE_PATH, ABSPATH, PCLZIP_OPT_IWP_EXCLUDE, $exclude_data, PCLZIP_OPT_NO_COMPRESSION);
+					$result = $archive->add($include_data, IWP_PCLZIP_OPT_REMOVE_PATH, ABSPATH, IWP_PCLZIP_OPT_IWP_EXCLUDE, $exclude_data, IWP_PCLZIP_OPT_NO_COMPRESSION);
 				}
 				elseif($fail_safe_files && !$disable_comp){
-					$result = $archive->add($include_data, PCLZIP_OPT_REMOVE_PATH, ABSPATH, PCLZIP_OPT_IWP_EXCLUDE, $exclude_data,  PCLZIP_OPT_TEMP_FILE_THRESHOLD, 1);
+					$result = $archive->add($include_data, IWP_PCLZIP_OPT_REMOVE_PATH, ABSPATH, IWP_PCLZIP_OPT_IWP_EXCLUDE, $exclude_data,  IWP_PCLZIP_OPT_TEMP_FILE_THRESHOLD, 1);
 				}
 				else{
-					$result = $archive->add($include_data, PCLZIP_OPT_REMOVE_PATH, ABSPATH, PCLZIP_OPT_IWP_EXCLUDE, $exclude_data);
+					$result = $archive->add($include_data, IWP_PCLZIP_OPT_REMOVE_PATH, ABSPATH, IWP_PCLZIP_OPT_IWP_EXCLUDE, $exclude_data);
 				}
 				
 				iwp_mmb_print_flush('Files ZIP PCL: End');
@@ -800,21 +800,21 @@ function delete_task_now($task_name){
 	function fail_safe_pcl_db($backup_file,$fail_safe_files,$disable_comp){
 		//$this->back_hack($task_name, 'DB ZIP PCL: Start');
 		iwp_mmb_print_flush('DB ZIP PCL: Start');
-		//define('PCLZIP_TEMPORARY_DIR', IWP_BACKUP_DIR . '/');
+		//define('IWP_PCLZIP_TEMPORARY_DIR', IWP_BACKUP_DIR . '/');
 		require_once $GLOBALS['iwp_mmb_plugin_dir'].'/pclzip.class.php';
 		$archive = new IWPPclZip($backup_file);
         
 		if($fail_safe_files && $disable_comp){
-			 $result_db = $archive->add(IWP_DB_DIR, PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR, PCLZIP_OPT_NO_COMPRESSION, PCLZIP_OPT_TEMP_FILE_THRESHOLD, 1);
+			 $result_db = $archive->add(IWP_DB_DIR, IWP_PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR, IWP_PCLZIP_OPT_NO_COMPRESSION, IWP_PCLZIP_OPT_TEMP_FILE_THRESHOLD, 1);
 		}
 		elseif(!$fail_safe_files && $disable_comp){
-			 $result_db = $archive->add(IWP_DB_DIR, PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR, PCLZIP_OPT_NO_COMPRESSION);
+			 $result_db = $archive->add(IWP_DB_DIR, IWP_PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR, IWP_PCLZIP_OPT_NO_COMPRESSION);
 		}
 		elseif($fail_safe_files && !$disable_comp){
-			 $result_db = $archive->add(IWP_DB_DIR, PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR, PCLZIP_OPT_TEMP_FILE_THRESHOLD, 1);
+			 $result_db = $archive->add(IWP_DB_DIR, IWP_PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR, IWP_PCLZIP_OPT_TEMP_FILE_THRESHOLD, 1);
 		}
 		else{
-			 $result_db = $archive->add(IWP_DB_DIR, PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR);
+			 $result_db = $archive->add(IWP_DB_DIR, IWP_PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR);
     }
 		//$this->back_hack($task_name, 'DB ZIP PCL: End');
 		iwp_mmb_print_flush('DB ZIP PCL: End');
@@ -1472,13 +1472,13 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
 			iwp_mmb_print_flush('ZIP Extract CMD: End');
             
             if (!$result) { //fallback to pclzip
-                define('PCLZIP_TEMPORARY_DIR', IWP_BACKUP_DIR . '/');
+                define('IWP_PCLZIP_TEMPORARY_DIR', IWP_BACKUP_DIR . '/');
                 //require_once ABSPATH . '/wp-admin/includes/class-pclzip.php';
 				require_once $GLOBALS['iwp_mmb_plugin_dir'].'/pclzip.class.php';
 				iwp_mmb_print_flush('ZIP Extract PCL: Start');
                 $archive = new IWPPclZip($backup_file);
-				$result  = $archive->extract(PCLZIP_OPT_PATH, $new_temp_folder, PCLZIP_OPT_TEMP_FILE_THRESHOLD, 1); //actual
-                //$result  = $archive->extract(PCLZIP_OPT_PATH, $new_temp_folder, PCLZIP_OPT_REMOVE_PATH, $GLOBALS['iwp_mmb_plugin_dir'], PCLZIP_OPT_TEMP_FILE_THRESHOLD, 1);
+				$result  = $archive->extract(IWP_PCLZIP_OPT_PATH, $new_temp_folder, IWP_PCLZIP_OPT_TEMP_FILE_THRESHOLD, 1); //actual
+                //$result  = $archive->extract(IWP_PCLZIP_OPT_PATH, $new_temp_folder, IWP_PCLZIP_OPT_REMOVE_PATH, $GLOBALS['iwp_mmb_plugin_dir'], IWP_PCLZIP_OPT_TEMP_FILE_THRESHOLD, 1);
 				iwp_mmb_print_flush('ZIP Extract PCL: End');
             }
 			$this->wpdb_reconnect();

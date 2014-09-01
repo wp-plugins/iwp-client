@@ -24,8 +24,8 @@ if(!defined('IWP_DB_DIR')){
 define('IWP_DB_DIR', IWP_BACKUP_DIR . '/iwp_db');
 }
 
-if(!defined('PCLZIP_TEMPORARY_DIR')){
-define('PCLZIP_TEMPORARY_DIR', WP_CONTENT_DIR . '/infinitewp/temp/');
+if(!defined('IWP_PCLZIP_TEMPORARY_DIR')){
+define('IWP_PCLZIP_TEMPORARY_DIR', WP_CONTENT_DIR . '/infinitewp/temp/');
 }
 
 
@@ -226,27 +226,27 @@ class IWP_MMB_Backup_Multicall extends IWP_MMB_Core
 			
 			//pclzip temp folder creation
 			
-			if(file_exists(PCLZIP_TEMPORARY_DIR) && is_dir(PCLZIP_TEMPORARY_DIR))
+			if(file_exists(IWP_PCLZIP_TEMPORARY_DIR) && is_dir(IWP_PCLZIP_TEMPORARY_DIR))
 			{
 				$this->statusLog($historyID, array('stage' => 'verification', 'status' => 'processing', 'statusMsg' => 'Directorywritable'));
 			}
 			else
 			{
-				$mkdir = @mkdir(PCLZIP_TEMPORARY_DIR, 0755, true);
+				$mkdir = @mkdir(IWP_PCLZIP_TEMPORARY_DIR, 0755, true);
 				if(!$mkdir){
-					return $this->statusLog($historyID, array('stage' => 'verification', 'status' => 'error', 'statusMsg' => 'Error creating database backup folder (' . PCLZIP_TEMPORARY_DIR . '). Make sure you have corrrect write permissions.', 'statusCode' => 'error_creating_database_backup_folder'));
+					return $this->statusLog($historyID, array('stage' => 'verification', 'status' => 'error', 'statusMsg' => 'Error creating database backup folder (' . IWP_PCLZIP_TEMPORARY_DIR . '). Make sure you have corrrect write permissions.', 'statusCode' => 'error_creating_database_backup_folder'));
 				}
 			}
-			if(is_writable(PCLZIP_TEMPORARY_DIR))
+			if(is_writable(IWP_PCLZIP_TEMPORARY_DIR))
 			{
-				@file_put_contents(PCLZIP_TEMPORARY_DIR . '/index.php', ''); //safe	
+				@file_put_contents(IWP_PCLZIP_TEMPORARY_DIR . '/index.php', ''); //safe	
 			}
 			else
 			{
-				$chmod = chmod(PCLZIP_TEMPORARY_DIR, 777);
-				if(!is_writable(PCLZIP_TEMPORARY_DIR)){
+				$chmod = chmod(IWP_PCLZIP_TEMPORARY_DIR, 777);
+				if(!is_writable(IWP_PCLZIP_TEMPORARY_DIR)){
 					//$this->statusLog($historyID, "verification", false, "can't set 777");
-					return $this->statusLog($historyID, array('stage' => 'verification', 'status' => 'error', 'statusMsg' => PCLZIP_TEMPORARY_DIR.' directory is not writable. Please set 755 or 777 file permission and try again.', 'statusCode' => 'pclzip_dir_not_writable'));
+					return $this->statusLog($historyID, array('stage' => 'verification', 'status' => 'error', 'statusMsg' => IWP_PCLZIP_TEMPORARY_DIR.' directory is not writable. Please set 755 or 777 file permission and try again.', 'statusCode' => 'pclzip_dir_not_writable'));
 				}
 			}
 			
@@ -514,10 +514,10 @@ class IWP_MMB_Backup_Multicall extends IWP_MMB_Core
 			//perform the zip operations here ..... for DB
 			iwp_mmb_print_flush('DB ZIP PCL: Start');
 			// fallback to pclzip
-			//define('PCLZIP_TEMPORARY_DIR', IWP_BACKUP_DIR . '/');
+			//define('IWP_PCLZIP_TEMPORARY_DIR', IWP_BACKUP_DIR . '/');
 			/* require_once $GLOBALS['iwp_mmb_plugin_dir'].'/pclzip.class.php';
 			$archive = new IWPPclZip($backup_file);
-			$result = $archive->add(IWP_DB_DIR, PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR); */
+			$result = $archive->add(IWP_DB_DIR, IWP_PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR); */
 			$result = $this -> backupFilesZIP($historyID);
 			iwp_mmb_print_flush('DB ZIP PCL: End');
 			/* @unlink($db_result);
@@ -1115,7 +1115,7 @@ class IWP_MMB_Backup_Multicall extends IWP_MMB_Core
 		}
 		
 		include_once $GLOBALS['iwp_mmb_plugin_dir'].'/pclzip.class.php';
-		//define('PCLZIP_TEMPORARY_DIR', IWP_BACKUP_DIR . '/');
+		//define('IWP_PCLZIP_TEMPORARY_DIR', IWP_BACKUP_DIR . '/');
 		
 		//include_once $GLOBALS['iwp_mmb_plugin_dir'].'/pclzip.class.split.php';
 		$returnArr = array();
@@ -1152,8 +1152,8 @@ class IWP_MMB_Backup_Multicall extends IWP_MMB_Core
 		{
 			if(empty($p_filedescr_list))
 			{
-				//define('PCLZIP_TEMPORARY_DIR', IWP_BACKUP_DIR . '/');
-				$p_filedescr_list_array = $archive->getFileList(IWP_DB_DIR, PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR, PCLZIP_OPT_CHUNK_BLOCK_SIZE, $file_block_size, PCLZIP_OPT_HISTORY_ID, $historyID);				//darkCode set the file block size here .. static values
+				//define('IWP_PCLZIP_TEMPORARY_DIR', IWP_BACKUP_DIR . '/');
+				$p_filedescr_list_array = $archive->getFileList(IWP_DB_DIR, IWP_PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR, IWP_PCLZIP_OPT_CHUNK_BLOCK_SIZE, $file_block_size, IWP_PCLZIP_OPT_HISTORY_ID, $historyID);				//darkCode set the file block size here .. static values
 				$p_filedescr_list = $p_filedescr_list_array['p_filedescr_list'];
 				unset($p_filedescr_list_array['p_filedescr_list']);
 				
@@ -1186,7 +1186,7 @@ class IWP_MMB_Backup_Multicall extends IWP_MMB_Core
 		{
 			if(empty($p_filedescr_list))
 			{
-				$p_filedescr_list_array = $archive->getFileList($include_data, PCLZIP_OPT_REMOVE_PATH, ABSPATH, PCLZIP_OPT_IWP_EXCLUDE, $exclude_data, PCLZIP_OPT_CHUNK_BLOCK_SIZE, $file_block_size, PCLZIP_OPT_HISTORY_ID, $historyID);  //testing	darkCode set the file block size here .. static values
+				$p_filedescr_list_array = $archive->getFileList($include_data, IWP_PCLZIP_OPT_REMOVE_PATH, ABSPATH, IWP_PCLZIP_OPT_IWP_EXCLUDE, $exclude_data, IWP_PCLZIP_OPT_CHUNK_BLOCK_SIZE, $file_block_size, IWP_PCLZIP_OPT_HISTORY_ID, $historyID);  //testing	darkCode set the file block size here .. static values
 				
 				$p_filedescr_list = $p_filedescr_list_array['p_filedescr_list'];
 				unset($p_filedescr_list_array['p_filedescr_list']);
@@ -1268,8 +1268,8 @@ class IWP_MMB_Backup_Multicall extends IWP_MMB_Core
 			if (   ($p_filedescr_list[$j]['type'] == 'file')
 					|| ($p_filedescr_list[$j]['type'] == 'virtual_file')
 					|| (   ($p_filedescr_list[$j]['type'] == 'folder')
-						&& (   !isset($p_options[PCLZIP_OPT_REMOVE_ALL_PATH])
-							|| !$p_options[PCLZIP_OPT_REMOVE_ALL_PATH]))
+						&& (   !isset($p_options[IWP_PCLZIP_OPT_REMOVE_ALL_PATH])
+							|| !$p_options[IWP_PCLZIP_OPT_REMOVE_ALL_PATH]))
 					) {
 				
 				$time = microtime(true);
@@ -1557,7 +1557,7 @@ class IWP_MMB_Backup_Multicall extends IWP_MMB_Core
 		{
 			if(empty($p_filedescr_list)||($nextCount == 0))
 			{
-				$p_filedescr_list_array = $archive->getFileList(IWP_DB_DIR, PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR, PCLZIP_OPT_CHUNK_BLOCK_SIZE, $file_block_size, PCLZIP_OPT_HISTORY_ID, $historyID);//darkCode set the file block size here .. static values
+				$p_filedescr_list_array = $archive->getFileList(IWP_DB_DIR, IWP_PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR, IWP_PCLZIP_OPT_CHUNK_BLOCK_SIZE, $file_block_size, IWP_PCLZIP_OPT_HISTORY_ID, $historyID);//darkCode set the file block size here .. static values
 				$p_filedescr_list = $p_filedescr_list_array['p_filedescr_list'];
 				
 				if($p_filedescr_list_array['status'] == 'partiallyCompleted')
@@ -1589,7 +1589,7 @@ class IWP_MMB_Backup_Multicall extends IWP_MMB_Core
 		{
 			if(empty($p_filedescr_list)||($nextCount == 0))
 			{
-				$p_filedescr_list_array = $archive->getFileList($include_data, PCLZIP_OPT_REMOVE_PATH, ABSPATH, PCLZIP_OPT_IWP_EXCLUDE, $exclude_data, PCLZIP_OPT_CHUNK_BLOCK_SIZE, $file_block_size, PCLZIP_OPT_HISTORY_ID, $historyID);  //testing	darkCode set the file block size here .. static values
+				$p_filedescr_list_array = $archive->getFileList($include_data, IWP_PCLZIP_OPT_REMOVE_PATH, ABSPATH, IWP_PCLZIP_OPT_IWP_EXCLUDE, $exclude_data, IWP_PCLZIP_OPT_CHUNK_BLOCK_SIZE, $file_block_size, IWP_PCLZIP_OPT_HISTORY_ID, $historyID);  //testing	darkCode set the file block size here .. static values
 				
 				$p_filedescr_list = $p_filedescr_list_array['p_filedescr_list'];
 				
@@ -1653,7 +1653,7 @@ class IWP_MMB_Backup_Multicall extends IWP_MMB_Core
 		@rewind($archive->zip_fd);
 
 		// ----- Creates a temporay file
-		$v_zip_temp_name = PCLZIP_TEMPORARY_DIR.uniqid('pclzip-').'.tmp';
+		$v_zip_temp_name = IWP_PCLZIP_TEMPORARY_DIR.uniqid('pclzip-').'.tmp';
 
 		// ----- Open the temporary file in write mode
 		if (($v_zip_temp_fd = @fopen($v_zip_temp_name, 'wb+')) == 0)
@@ -1674,7 +1674,7 @@ class IWP_MMB_Backup_Multicall extends IWP_MMB_Core
 		
 		while ($actualFileSize != 0)
 		{
-			$v_read_size = ($actualFileSize < PCLZIP_READ_BLOCK_SIZE ? $actualFileSize : PCLZIP_READ_BLOCK_SIZE);
+			$v_read_size = ($actualFileSize < IWP_PCLZIP_READ_BLOCK_SIZE ? $actualFileSize : IWP_PCLZIP_READ_BLOCK_SIZE);
 			$v_buffer = fread($archive->zip_fd, $v_read_size);
 			@fwrite($v_zip_temp_fd, $v_buffer, $v_read_size);
 			$actualFileSize -= $v_read_size;
@@ -1737,8 +1737,8 @@ class IWP_MMB_Backup_Multicall extends IWP_MMB_Core
 			if (   ($p_filedescr_list[$j]['type'] == 'file')
 					|| ($p_filedescr_list[$j]['type'] == 'virtual_file')
 					|| (   ($p_filedescr_list[$j]['type'] == 'folder')
-						&& (   !isset($p_options[PCLZIP_OPT_REMOVE_ALL_PATH])
-							|| !$p_options[PCLZIP_OPT_REMOVE_ALL_PATH]))
+						&& (   !isset($p_options[IWP_PCLZIP_OPT_REMOVE_ALL_PATH])
+							|| !$p_options[IWP_PCLZIP_OPT_REMOVE_ALL_PATH]))
 					) {
 				$time = microtime(true);
 				$finish_part = $time;
@@ -1795,7 +1795,7 @@ class IWP_MMB_Backup_Multicall extends IWP_MMB_Core
 		$v_size = $v_central_dir['size'];
 		/* while ($v_size != 0)
 			{
-				$v_read_size = ($v_size < PCLZIP_READ_BLOCK_SIZE ? $v_size : PCLZIP_READ_BLOCK_SIZE);
+				$v_read_size = ($v_size < IWP_PCLZIP_READ_BLOCK_SIZE ? $v_size : IWP_PCLZIP_READ_BLOCK_SIZE);
 				$v_buffer = @fread($v_zip_temp_fd, $v_read_size);
 				@fwrite($archive->zip_fd, $v_buffer, $v_read_size);
 				$v_size -= $v_read_size;
@@ -2389,7 +2389,7 @@ function task_now($task_name){
 		//$this->back_hack($task_name, 'Files ZIP PCL: Start');
 				iwp_mmb_print_flush('Files ZIP PCL: Start');
 				if (!isset($archive)) {
-					//define('PCLZIP_TEMPORARY_DIR', IWP_BACKUP_DIR . '/');
+					//define('IWP_PCLZIP_TEMPORARY_DIR', IWP_BACKUP_DIR . '/');
 					//require_once ABSPATH . '/wp-admin/includes/class-pclzip.php';
 					require_once $GLOBALS['iwp_mmb_plugin_dir'].'/pclzip.class.php';
 					$archive = new IWPPclZip($backup_file);
@@ -2435,16 +2435,16 @@ function task_now($task_name){
 				}
 				
 				if($fail_safe_files && $disable_comp){
-					$result = $archive->add($include_data, PCLZIP_OPT_REMOVE_PATH, ABSPATH, PCLZIP_OPT_IWP_EXCLUDE, $exclude_data, PCLZIP_OPT_NO_COMPRESSION, PCLZIP_OPT_TEMP_FILE_THRESHOLD, 1);
+					$result = $archive->add($include_data, IWP_PCLZIP_OPT_REMOVE_PATH, ABSPATH, IWP_PCLZIP_OPT_IWP_EXCLUDE, $exclude_data, IWP_PCLZIP_OPT_NO_COMPRESSION, IWP_PCLZIP_OPT_TEMP_FILE_THRESHOLD, 1);
 				}
 				elseif(!$fail_safe_files && $disable_comp){
-					$result = $archive->add($include_data, PCLZIP_OPT_REMOVE_PATH, ABSPATH, PCLZIP_OPT_IWP_EXCLUDE, $exclude_data, PCLZIP_OPT_NO_COMPRESSION);
+					$result = $archive->add($include_data, IWP_PCLZIP_OPT_REMOVE_PATH, ABSPATH, IWP_PCLZIP_OPT_IWP_EXCLUDE, $exclude_data, IWP_PCLZIP_OPT_NO_COMPRESSION);
 				}
 				elseif($fail_safe_files && !$disable_comp){
-					$result = $archive->add($include_data, PCLZIP_OPT_REMOVE_PATH, ABSPATH, PCLZIP_OPT_IWP_EXCLUDE, $exclude_data,  PCLZIP_OPT_TEMP_FILE_THRESHOLD, 1);
+					$result = $archive->add($include_data, IWP_PCLZIP_OPT_REMOVE_PATH, ABSPATH, IWP_PCLZIP_OPT_IWP_EXCLUDE, $exclude_data,  IWP_PCLZIP_OPT_TEMP_FILE_THRESHOLD, 1);
 				}
 				else{
-					$result = $archive->add($include_data, PCLZIP_OPT_REMOVE_PATH, ABSPATH, PCLZIP_OPT_IWP_EXCLUDE, $exclude_data);
+					$result = $archive->add($include_data, IWP_PCLZIP_OPT_REMOVE_PATH, ABSPATH, IWP_PCLZIP_OPT_IWP_EXCLUDE, $exclude_data);
 				}
 				
 				iwp_mmb_print_flush('Files ZIP PCL: End');
@@ -2461,21 +2461,21 @@ function task_now($task_name){
 	function fail_safe_pcl_db($backup_file,$fail_safe_files,$disable_comp){
 		//$this->back_hack($task_name, 'DB ZIP PCL: Start');
 		iwp_mmb_print_flush('DB ZIP PCL: Start');
-		//define('PCLZIP_TEMPORARY_DIR', IWP_BACKUP_DIR . '/');
+		//define('IWP_PCLZIP_TEMPORARY_DIR', IWP_BACKUP_DIR . '/');
 		require_once $GLOBALS['iwp_mmb_plugin_dir'].'/pclzip.class.php';
 		$archive = new IWPPclZip($backup_file);
         
 		if($fail_safe_files && $disable_comp){
-			 $result_db = $archive->add(IWP_DB_DIR, PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR, PCLZIP_OPT_NO_COMPRESSION, PCLZIP_OPT_TEMP_FILE_THRESHOLD, 1);
+			 $result_db = $archive->add(IWP_DB_DIR, IWP_PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR, IWP_PCLZIP_OPT_NO_COMPRESSION, IWP_PCLZIP_OPT_TEMP_FILE_THRESHOLD, 1);
 		}
 		elseif(!$fail_safe_files && $disable_comp){
-			 $result_db = $archive->add(IWP_DB_DIR, PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR, PCLZIP_OPT_NO_COMPRESSION);
+			 $result_db = $archive->add(IWP_DB_DIR, IWP_PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR, IWP_PCLZIP_OPT_NO_COMPRESSION);
 		}
 		elseif($fail_safe_files && !$disable_comp){
-			 $result_db = $archive->add(IWP_DB_DIR, PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR, PCLZIP_OPT_TEMP_FILE_THRESHOLD, 1);
+			 $result_db = $archive->add(IWP_DB_DIR, IWP_PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR, IWP_PCLZIP_OPT_TEMP_FILE_THRESHOLD, 1);
 		}
 		else{
-			 $result_db = $archive->add(IWP_DB_DIR, PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR);
+			 $result_db = $archive->add(IWP_DB_DIR, IWP_PCLZIP_OPT_REMOVE_PATH, IWP_BACKUP_DIR);
     }
 		//$this->back_hack($task_name, 'DB ZIP PCL: End');
 		iwp_mmb_print_flush('DB ZIP PCL: End');
@@ -2864,47 +2864,47 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
 		
 		// do process
 		//$temp_dir = get_temp_dir();
-		$temp_dir = PCLZIP_TEMPORARY_DIR;
+		$temp_dir = IWP_PCLZIP_TEMPORARY_DIR;
 		
 		
 		
-		if(file_exists(PCLZIP_TEMPORARY_DIR) && is_dir(PCLZIP_TEMPORARY_DIR))
+		if(file_exists(IWP_PCLZIP_TEMPORARY_DIR) && is_dir(IWP_PCLZIP_TEMPORARY_DIR))
 		{
 			//
 		}
 		else
 		{
-			if(file_exists(dirname(PCLZIP_TEMPORARY_DIR)) && is_dir(dirname(PCLZIP_TEMPORARY_DIR))){
-				@mkdir(PCLZIP_TEMPORARY_DIR, 0755, true);
+			if(file_exists(dirname(IWP_PCLZIP_TEMPORARY_DIR)) && is_dir(dirname(IWP_PCLZIP_TEMPORARY_DIR))){
+				@mkdir(IWP_PCLZIP_TEMPORARY_DIR, 0755, true);
 			}
 			else{
-				@mkdir(dirname(PCLZIP_TEMPORARY_DIR), 0755, true);
-				@mkdir(PCLZIP_TEMPORARY_DIR, 0755, true);
+				@mkdir(dirname(IWP_PCLZIP_TEMPORARY_DIR), 0755, true);
+				@mkdir(IWP_PCLZIP_TEMPORARY_DIR, 0755, true);
 			}
 			
 		}
-		if(is_writable(PCLZIP_TEMPORARY_DIR))
+		if(is_writable(IWP_PCLZIP_TEMPORARY_DIR))
 		{
-			@file_put_contents(PCLZIP_TEMPORARY_DIR . '/index.php', ''); //safe	
+			@file_put_contents(IWP_PCLZIP_TEMPORARY_DIR . '/index.php', ''); //safe	
 		}
 		else
 		{
-			$chmod = chmod(PCLZIP_TEMPORARY_DIR, 777);
-			if(is_writable(PCLZIP_TEMPORARY_DIR)){
-				@file_put_contents(PCLZIP_TEMPORARY_DIR . '/index.php', ''); //safe		
+			$chmod = chmod(IWP_PCLZIP_TEMPORARY_DIR, 777);
+			if(is_writable(IWP_PCLZIP_TEMPORARY_DIR)){
+				@file_put_contents(IWP_PCLZIP_TEMPORARY_DIR . '/index.php', ''); //safe		
 			}
 	
 		}
 		
-		if(is_writable(PCLZIP_TEMPORARY_DIR))
+		if(is_writable(IWP_PCLZIP_TEMPORARY_DIR))
 		{
-			$temp_dir = PCLZIP_TEMPORARY_DIR;
+			$temp_dir = IWP_PCLZIP_TEMPORARY_DIR;
 		}
 		else{
 			$temp_dir = get_temp_dir();
 			if(!is_writable($temp_dir)){
 				return array(
-							'error' => 'Temporary directory is not writable. Please set 777 permission for '.PCLZIP_TEMPORARY_DIR.' and try again.', 'error_code' => 'pclzip_temp_dir_not_writable_please_set_777'
+							'error' => 'Temporary directory is not writable. Please set 777 permission for '.IWP_PCLZIP_TEMPORARY_DIR.' and try again.', 'error_code' => 'pclzip_temp_dir_not_writable_please_set_777'
 							);
 			}
 		}
@@ -3051,12 +3051,12 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
 				iwp_mmb_print_flush('ZIP Extract CMD: End');
 				
 				if (!$result) { //fallback to pclzip
-					////define('PCLZIP_TEMPORARY_DIR', IWP_BACKUP_DIR . '/');
+					////define('IWP_PCLZIP_TEMPORARY_DIR', IWP_BACKUP_DIR . '/');
 					//require_once ABSPATH . '/wp-admin/includes/class-pclzip.php';
 					//require_once $GLOBALS['iwp_mmb_plugin_dir'].'/pclzip.class.php';
 					iwp_mmb_print_flush('ZIP Extract PCL: Start');
 					$archive = new IWPPclZip($single_backup_file);
-					$result  = $archive->extract(PCLZIP_OPT_PATH, $new_temp_folder, PCLZIP_OPT_REPLACE_NEWER);
+					$result  = $archive->extract(IWP_PCLZIP_OPT_PATH, $new_temp_folder, IWP_PCLZIP_OPT_REPLACE_NEWER);
 					iwp_mmb_print_flush('ZIP Extract PCL: End');
 				}
 				
@@ -4584,8 +4584,8 @@ function ftp_backup($historyID,$args = '')
 				$backup_settings_values['s3_retrace_count'][$historyID] = $s3_retrace_count;
 				update_option('iwp_client_multi_backup_temp_values', $backup_settings_values);
 				
-				$partsArray = $s3->list_parts($as3_bucket, $as3_file, $upload_id);
-				$nextPart = (count($partsArray) + 1);
+				//$partsArray = $s3->list_parts($as3_bucket, $as3_file, $upload_id);//commenting this line because of fatal error $s3 object is not created, looks like these lines not required here
+				//$nextPart = (count($partsArray) + 1);//commenting this line because of fatal error $s3 object is not created, looks like these lines not required here
 			}
 			else
 			{

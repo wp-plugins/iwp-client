@@ -48,10 +48,13 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog ==
 
+= 1.3.6 =
+* Fix: IWP's PCLZIP clash with other plugins. PCLZIP constants have been renamed to avoid further conflicts. This will fix empty folder error - "Error creating database backup folder (). Make sure you have correct write permissions."
+* Fix: Amazon S3 related - Call to a member function list_parts() on a non-object in wp-content/plugins/iwp-client/backup.class.multicall.php on line 4587.
+
 = 1.3.5 =
 * Improvement: Support for iThemes Security Pro.
 * Fix: IWP's PCLZIP clash with other plugins.
-
 
 = 1.3.4 =
 * Feature: Maintenance mode with custom HTML.
@@ -68,7 +71,6 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 = 1.3.1 =
 * Fix: "Unable to create a temporary directory" while cloning to exisiting site or restoring.
 * Fix: Disabled tracking hit count.
-
 
 = 1.3.0 =
 * Improvement: Multi-call backup & upload.
