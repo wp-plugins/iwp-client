@@ -4,7 +4,7 @@ Plugin Name: InfiniteWP - Client
 Plugin URI: http://infinitewp.com/
 Description: This is the client plugin of InfiniteWP that communicates with the InfiniteWP Admin panel.
 Author: Revmakx
-Version: 1.3.7
+Version: 1.3.8
 Author URI: http://www.revmakx.com
 */
 /************************************************************
@@ -26,7 +26,7 @@ Author URI: http://www.revmakx.com
  **************************************************************/
 
 if(!defined('IWP_MMB_CLIENT_VERSION'))
-	define('IWP_MMB_CLIENT_VERSION', '1.3.7');
+	define('IWP_MMB_CLIENT_VERSION', '1.3.8');
 	
 
 
@@ -138,13 +138,13 @@ if( !function_exists ('iwp_mmb_parse_request')) {
 				iwp_mmb_readd_site($params);
 				iwp_mmb_response(array('error' => 'You should never see this.', 'error_code' => 'you_should_never_see_this'), false);
 			}
-			if ($action == 'maintain_site') {
-				iwp_mmb_maintain_site($params);
-				iwp_mmb_response(array('error' => 'You should never see this.', 'error_code' => 'you_should_never_see_this'), false);
-			}
-
+			
 			$auth = $iwp_mmb_core->authenticate_message($action . $id, $signature, $id);
 			if ($auth === true) {
+				if ($action == 'maintain_site') {
+					iwp_mmb_maintain_site($params);
+					iwp_mmb_response(array('error' => 'You should never see this.', 'error_code' => 'you_should_never_see_this'), false);
+				}
 				@ignore_user_abort(true);
 				$GLOBALS['IWP_CLIENT_HISTORY_ID'] = $id;
 				
