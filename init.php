@@ -4,7 +4,7 @@ Plugin Name: InfiniteWP - Client
 Plugin URI: http://infinitewp.com/
 Description: This is the client plugin of InfiniteWP that communicates with the InfiniteWP Admin panel.
 Author: Revmakx
-Version: 1.3.9
+Version: 1.3.10
 Author URI: http://www.revmakx.com
 */
 /************************************************************
@@ -26,7 +26,7 @@ Author URI: http://www.revmakx.com
  **************************************************************/
 
 if(!defined('IWP_MMB_CLIENT_VERSION'))
-	define('IWP_MMB_CLIENT_VERSION', '1.3.9');
+	define('IWP_MMB_CLIENT_VERSION', '1.3.10');
 	
 
 
@@ -1485,17 +1485,17 @@ if(!function_exists('checkOpenSSL')){
 		return false;
 	}
 	else{
-		$ossl_err = @openssl_error_string();if($ossl_err!=false) return false;
+		//$ossl_err = @openssl_error_string();if($ossl_err!=false) return false;
 		$key = @openssl_pkey_new();
 
-		$ossl_err = @openssl_error_string();if($ossl_err!=false) return false;
+		//$ossl_err = @openssl_error_string();if($ossl_err!=false) return false;
 		@openssl_pkey_export($key, $privateKey);
 		$privateKey	= base64_encode($privateKey);
 
-		$ossl_err = @openssl_error_string();if($ossl_err!=false) return false;
+		//$ossl_err = @openssl_error_string();if($ossl_err!=false) return false;
 		$publicKey = @openssl_pkey_get_details($key);
 		
-		$ossl_err = @openssl_error_string();if($ossl_err!=false) return false;
+		//$ossl_err = @openssl_error_string();if($ossl_err!=false) return false;
 		$publicKey 	= $publicKey["key"];
 		
 		if(empty($publicKey) || empty($privateKey)){

@@ -48,6 +48,9 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog ==
 
+= 1.3.10 =
+* Fix: Bug Fix.
+
 = 1.3.9 =
 * Fix: WP Dashboard jQuery conflict issue. 
 * Fix: Empty reply from server created by not properly configured OpenSSL functions.
