@@ -4,7 +4,7 @@ Plugin Name: InfiniteWP - Client
 Plugin URI: http://infinitewp.com/
 Description: This is the client plugin of InfiniteWP that communicates with the InfiniteWP Admin panel.
 Author: Revmakx
-Version: 1.3.8
+Version: 1.3.9
 Author URI: http://www.revmakx.com
 */
 /************************************************************
@@ -26,7 +26,7 @@ Author URI: http://www.revmakx.com
  **************************************************************/
 
 if(!defined('IWP_MMB_CLIENT_VERSION'))
-	define('IWP_MMB_CLIENT_VERSION', '1.3.8');
+	define('IWP_MMB_CLIENT_VERSION', '1.3.9');
 	
 
 
@@ -1485,10 +1485,17 @@ if(!function_exists('checkOpenSSL')){
 		return false;
 	}
 	else{
+		$ossl_err = @openssl_error_string();if($ossl_err!=false) return false;
 		$key = @openssl_pkey_new();
+
+		$ossl_err = @openssl_error_string();if($ossl_err!=false) return false;
 		@openssl_pkey_export($key, $privateKey);
 		$privateKey	= base64_encode($privateKey);
+
+		$ossl_err = @openssl_error_string();if($ossl_err!=false) return false;
 		$publicKey = @openssl_pkey_get_details($key);
+		
+		$ossl_err = @openssl_error_string();if($ossl_err!=false) return false;
 		$publicKey 	= $publicKey["key"];
 		
 		if(empty($publicKey) || empty($privateKey)){
@@ -1782,5 +1789,34 @@ if(	isset($_COOKIE[IWP_MMB_XFRAME_COOKIE]) ){
 	remove_action( 'admin_init', 'send_frame_options_header');
 	remove_action( 'login_init', 'send_frame_options_header');
 }
+
+//added for jQuery compatibility
+if(!function_exists('iwp_mmb_register_ext_scripts')){
+	function iwp_mmb_register_ext_scripts(){
+		wp_register_script( 'iwp-zero-clipboard', plugins_url( '/ZeroClipboard.js', __FILE__ ) );
+	}
+}
+
+add_action( 'admin_init', 'iwp_mmb_register_ext_scripts' );
+
+
+if(!function_exists('iwp_mmb_add_zero_clipboard_scripts')){
+	function iwp_mmb_add_zero_clipboard_scripts(){	
+		if (!wp_script_is( 'iwp-zero-clipboard', 'enqueued' )) {
+			if(file_exists(WP_PLUGIN_DIR.'/iwp-client/ZeroClipboard.js') ){
+				wp_enqueue_script(
+					'iwp-zero-clipboard',
+					plugins_url( '/ZeroClipboard.js', __FILE__ ),
+					array( 'jquery' )
+				);
+			}
+		}
+	}
+}
+
+if ( !get_option('iwp_client_public_key')  && function_exists('add_action')){
+	add_action('admin_enqueue_scripts', 'iwp_mmb_add_zero_clipboard_scripts');
+}
+
 
 ?>

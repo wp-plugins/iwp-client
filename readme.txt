@@ -48,6 +48,11 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog ==
 
+= 1.3.9 =
+* Fix: WP Dashboard jQuery conflict issue. 
+* Fix: Empty reply from server created by not properly configured OpenSSL functions.
+* Fix: Google Drive backup upload timeout issue.
+
 = 1.3.8 =
 * Fix: Fixed a security bug that would allow someone to put WP site into maintenance mode if they know the admin username. 
 

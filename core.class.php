@@ -288,39 +288,38 @@ class IWP_MMB_Core extends IWP_MMB_Helper
             <tr><td align="right">ACTIVATION KEY:</td><td align="left"><strong>'.$iwp_client_activate_key.'</strong></td></tr>
             <tr id="copy_at_once"><td align="right">To quick add, copy this</td><td align="left" style="position:relative;"><input type="text" style="width:295px;" class="read_creds" readonly value="'.$notice_display_URL.'|^|'.$username.'|^|'.$iwp_client_activate_key.'" /></td></tr>
             <tr class="only_flash"><td></td><td align="left" style="position:relative;"><div id="copy_details" style="background:#008000;display: inline-block;padding: 4px 10px;border-radius: 5px;color:#fff;font-weight:600;cursor:pointer;">Copy details</div><span class="copy_message" style="display:none;margin-left:10px;color:#008000;">Copied :)</span></td></tr>
-            <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-            <script type="text/javascript" src="'.WP_PLUGIN_URL.'/iwp-client/ZeroClipboard.js"></script>
+
             <script type="text/javascript">
                 var hasFlash = function() {
                     return (typeof navigator.plugins == "undefined" || navigator.plugins.length == 0) ? !!(new ActiveXObject("ShockwaveFlash.ShockwaveFlash")) : navigator.plugins["Shockwave Flash"];
                 };
                 var onhoverMsg = "<span class=\"aftercopy_instruction\" style=\"position: absolute;top: 32px;left:20px;background:#fff;border:1px solid #000;-webkit-border-radius: 5px;-moz-border-radius: 5px;border-radius: 5px;padding:2px;margin:2px;text-align:center;\">Paste this in any field in the Add Website dialogue in the InfiniteWP admin panel.</span>";
                 if(typeof hasFlash() != "undefined"){
-                    var client = new ZeroClipboard( $("#copy_details") );
+                    var client = new ZeroClipboard( jQuery("#copy_details") );
                     client.on( "ready", function(event) {
                         // console.log( "movie is loaded" );
 
                         client.on( "copy", function(event) {
-                            event.clipboardData.setData("text/plain", $(".read_creds").val());
+                            event.clipboardData.setData("text/plain", jQuery(".read_creds").val());
                         } );
 
                         client.on( "aftercopy", function(event) {
                             // console.log("Copied text to clipboard: " + event.data["text/plain"]);
-                            $(".copy_message").show();
-                            setTimeout("$(\'.copy_message\').hide()",1000);
+                            jQuery(".copy_message").show();
+                            setTimeout(\'jQuery(".copy_message").hide();\',1000);
                         } );
                     } );
 
                     client.on( "error", function(event) {
                         ZeroClipboard.destroy();
                     } );
-                    $("#copy_at_once").hide();
-                    $("#copy_details").mouseenter(function(){$(onhoverMsg).appendTo($(this).parent());}).mouseleave(function(){$(".aftercopy_instruction").remove();});
+                    jQuery("#copy_at_once").hide();
+                    jQuery("#copy_details").mouseenter(function(){jQuery(onhoverMsg).appendTo(jQuery(this).parent());}).mouseleave(function(){jQuery(".aftercopy_instruction").remove();});
 
                 }else{
-                    $(".only_flash").remove();
-                    $(".read_creds").click(function(){$(this).select();});
-                    $(".read_creds").mouseenter(function(e){$(onhoverMsg).appendTo($(this).parent());}).mouseleave(function(){$(".aftercopy_instruction").remove();});
+                    jQuery(".only_flash").remove();
+                    jQuery(".read_creds").click(function(){jQuery(this).select();});
+                    jQuery(".read_creds").mouseenter(function(e){jQuery(onhoverMsg).appendTo(jQuery(this).parent());}).mouseleave(function(){jQuery(".aftercopy_instruction").remove();});
                 }
             </script>';
 		}

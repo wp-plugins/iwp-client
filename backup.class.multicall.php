@@ -5374,6 +5374,7 @@ function ftp_backup($historyID,$args = '')
 						
 				while (!$status && !feof($handle))
 				{
+					iwp_mmb_auto_print('gdrive_chucked_upload');
 					$chunk = fread($handle, $upload_file_block_size);
 					$statusArray = $media->nextChunk($chunk, $resumeURI, $fileSizeUploaded);
 					$status = $statusArray['status'];
