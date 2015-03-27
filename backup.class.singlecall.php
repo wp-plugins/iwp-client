@@ -853,7 +853,7 @@ function delete_task_now($task_name){
     		$result = false;
     	}
     	
-    	return $result; // true if $backup_file iz zipped successfully, false if error is occured in zip process
+    	return $result; // true if $backup_file iz zipped successfully, false if error is occurred in zip process
     }
 	
 	/**
@@ -895,7 +895,7 @@ function delete_task_now($task_name){
 		} else {
 			$result = false;
 		}
-		return $result; // true if $backup_file iz zipped successfully, false if error is occured in zip process
+		return $result; // true if $backup_file iz zipped successfully, false if error is occurred in zip process
     }
 	
 	
@@ -1353,12 +1353,12 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
 		
 		/////////////////// dev ////////////////////////
 			
-			
-		if (!$this->is_server_writable()) {
-			  return array(
-				   'error' => 'Failed, please add FTP details', 'error_code' => 'failes_add_ftp_details'
-			 );  
-		} 
+        if (!$this->is_server_writable()) {
+            return array(
+            'error' => 'Failed, please add FTP details', 'error_code' => 'failed_please_add_ftp_details'
+            );
+        }
+
 		
 		$url = wp_nonce_url('index.php?page=iwp_no_page','iwp_fs_cred');
 		ob_start();
@@ -3309,7 +3309,7 @@ function ftp_backup($args)
 		global $wpdb;
 		$table_name = $wpdb->base_prefix . "iwp_backup_status";
 				
-		$rows = $wpdb->get_row($wpdb->prepare("SELECT * FROM ".$table_name." WHERE historyID = %d", $ID), ARRAY_A);
+		$rows = $wpdb->get_row($wpdb->prepare("SELECT * FROM ".$table_name." WHERE historyID = %d ORDER BY ID DESC LIMIT 1", $ID), ARRAY_A);
 		
 		$return = unserialize($rows['taskResults']);
 				

@@ -24,6 +24,7 @@ class IWP_MMB_Installer extends IWP_MMB_Core
         parent::__construct();
         @include_once(ABSPATH . 'wp-admin/includes/file.php');
         @include_once(ABSPATH . 'wp-admin/includes/plugin.php');
+        @include_once(ABSPATH . 'wp-includes/plugin.php');
         @include_once(ABSPATH . 'wp-admin/includes/theme.php');
         @include_once(ABSPATH . 'wp-admin/includes/misc.php');
         @include_once(ABSPATH . 'wp-admin/includes/template.php');
@@ -48,6 +49,14 @@ class IWP_MMB_Installer extends IWP_MMB_Core
             $wp_filesystem->delete($file);
         }
     }
+
+    function bypass_url_validation($r,$url){
+        // $username = parse_url($url, PHP_URL_USER);
+        // $password = parse_url($url, PHP_URL_PASS);
+        // $r['headers'] = array('Authorization'=>'Basic'. base64_encode( $username . ':' . $password ) );
+        $r['reject_unsafe_urls'] = false;
+        return $r;
+    }
     
     function install_remote_file($params)
     {
@@ -60,11 +69,12 @@ class IWP_MMB_Installer extends IWP_MMB_Core
                 'error' => '<p>No files received. Internal error.</p>', 'error_code' => 'no_files_receive_internal_error'
             );
 			
-		if (!$this->is_server_writable()) {
-			return array(
-			     'error' => 'Failed, please add FTP details', 'error_code' => 'failed_please_add_ftp_install_remote_file'
-           );  
-      }        
+        if (!$this->is_server_writable()) {
+            return array(
+                'error' => 'Failed, please add FTP details', 'error_code' => 'failed_please_add_ftp_install_remote_file'
+            );
+        }
+
 	
         if (defined('WP_INSTALLING') && file_exists(ABSPATH . '.maintenance'))
             return array(
@@ -80,7 +90,8 @@ class IWP_MMB_Installer extends IWP_MMB_Core
         $upgrader          = new WP_Upgrader($upgrader_skin);
         $destination       = $type == 'themes' ? WP_CONTENT_DIR . '/themes' : WP_PLUGIN_DIR;
         $clear_destination = isset($clear_destination) ? $clear_destination : false;
-        
+
+        add_filter( 'http_request_args',array( $this, 'bypass_url_validation' ), 10, 2 );
         foreach ($package as $package_url) {
             $key                = basename($package_url);
             $install_info[$key] = @$upgrader->run(array(
@@ -153,14 +164,13 @@ class IWP_MMB_Installer extends IWP_MMB_Core
             return array(
                 'error' => 'No upgrades passed.', 'error_code' => 'no_upgrades_passed'
             );
-        
+         
         if (!$this->is_server_writable()) {
             return array(
-                'error' => 'Failed. please add FTP details.', 'error_code' => 'failed_please_add_ftp_do_upgrade'
+                'error' => 'Failed, please add FTP details', 'error_code' => 'failed_please_add_ftp_do_upgrade'
             );
         }
-        
-		
+
         $params = isset($params['upgrades_all']) ? $params['upgrades_all'] : $params;
         
         $core_upgrade    = isset($params['wp_upgrade']) ? $params['wp_upgrade'] : array();
@@ -796,12 +806,11 @@ class IWP_MMB_Installer extends IWP_MMB_Core
         if(function_exists('wp_get_themes')){
 	        $all_themes = wp_get_themes();
 	        $themes     = array(
-	            'active' => array(),
-	            'inactive' => array()
-	        );
-	        
+					            'active' => array(),
+					            'inactive' => array()
+					        );
 	        if (is_array($all_themes) && !empty($all_themes)) {
-	            $current_theme = get_current_theme();
+	            $current_theme = wp_get_theme();
 	            
 	            $br_a = 0;
 	            $br_i = 0;

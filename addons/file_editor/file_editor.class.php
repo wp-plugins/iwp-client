@@ -198,11 +198,12 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
         }else{
             $fileContent = gzinflate($fileContent);
         }
-       if (!$this->is_server_writable()) {
-              return array(
-                   'error' => 'Failed, please add FTP details', 'error_code' => 'failed_please_add_FTP_details_file_editor_upload'
-             );  
-        } 
+
+        if (!$this->is_server_writable()) {
+            return array(
+                'error' => 'Failed, please add FTP details', 'error_code' => 'failed_please_add_FTP_details_file_editor_upload'
+            );
+        }
         
         $url = wp_nonce_url('index.php?page=iwp_no_page','iwp_fs_cred');
         ob_start();

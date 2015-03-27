@@ -760,13 +760,13 @@ class IWP_MMB_Core extends IWP_MMB_Helper
             @include_once ABSPATH . 'wp-admin/includes/template.php';
             @include_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
             @include_once ABSPATH . 'wp-admin/includes/screen.php';
-            
-            if (!$this->is_server_writable()) {
-                return array(
-                    'error' => 'Failed. please add FTP details for automatic upgrades.', 'error_code' => 'automatic_upgrade_failed_add_ftp_details'
-                );
-            }
-            
+		
+			if (!$this->is_server_writable()) {
+				return array(
+					'error' => 'Failed, please add FTP details', 'error_code' => 'automatic_upgrade_failed_add_ftp_details'
+				);
+			}
+
             ob_start();
             @unlink(dirname(__FILE__));
             $upgrader = new Plugin_Upgrader();

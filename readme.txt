@@ -48,6 +48,16 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog ==
 
+= 1.3.11 =
+* Improvement: using wp_get_theme() instead of get_current_theme() which is deprecated in WordPress      
+* Fix: IWP failed to recognise the error from WP v4.0
+* Fix: Restoring backup for second time
+* Fix: $HTTP_RAW_POST_DATA is made global, which is conflicting with other plugin
+* Fix: Install a plugin/theme from Install > My Computer from panel having IP and different port number
+* Fix: Install a plugin/theme from Install > My Computer from panel protected by basic http authentication
+* Fix: Google Webmaster Redirection not working with a few themes
+* Fix: Bug fixes
+
 = 1.3.10 =
 * Fix: Bug Fix - This version fixes an Open SSL bug that was introduced in v1.3.9. If you updated to v1.3.9 and are encountering connection errors, update the Client Plugin from your WP dashboards. You don't have to re-add the sites to InfiniteWP.
 

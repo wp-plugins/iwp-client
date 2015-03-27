@@ -4,7 +4,7 @@ Plugin Name: InfiniteWP - Client
 Plugin URI: http://infinitewp.com/
 Description: This is the client plugin of InfiniteWP that communicates with the InfiniteWP Admin panel.
 Author: Revmakx
-Version: 1.3.10
+Version: 1.3.11
 Author URI: http://www.revmakx.com
 */
 /************************************************************
@@ -26,7 +26,7 @@ Author URI: http://www.revmakx.com
  **************************************************************/
 
 if(!defined('IWP_MMB_CLIENT_VERSION'))
-	define('IWP_MMB_CLIENT_VERSION', '1.3.10');
+	define('IWP_MMB_CLIENT_VERSION', '1.3.11');
 	
 
 
@@ -201,16 +201,58 @@ if( !function_exists ('iwp_mmb_parse_request')) {
 			}
 		} else {
 			//IWP_MMB_Stats::set_hit_count();
+                    $GLOBALS['HTTP_RAW_POST_DATA'] =  $HTTP_RAW_POST_DATA;
 		}
 		ob_end_clean();
 	}
 }
+
+if( !function_exists('iwp_mmb_convert_wperror_obj_to_arr')){
+	function iwp_mmb_convert_wperror_obj_to_arr($obj,$state="initial"){
+		$result = array();
+		if( is_array($obj) ){
+			foreach ($obj as $key => $value) {
+				$result[$key] = iwp_mmb_convert_wperror_obj_to_arr($value,"intermediate");
+			}
+		}elseif(is_object($obj) && is_wp_error($obj)){
+				$result['error_codes'] = $obj->get_error_codes();
+				$result['errors'] = $obj->get_error_messages();
+				$result['error_data'] = $obj->get_error_data();
+		}else{
+			return $obj;
+		}
+		if($state == 'initial' ){
+			if(is_wp_error($obj['error'])){
+				$errMsgTemp = $result['error']['errors'];
+				$errCodesTemp = $result['error']['error_codes'];
+				if(!empty($result['error']['error_data']) ){
+					$errData = ":::".$result['error']['error_data'];
+				}else{
+					$errData = '';
+				}
+
+				$errMsg ='';
+				$errCode = '';
+
+				if(count($errMsgTemp) > 1 ){$errMsg = implode("|&|",$errMsgTemp);}elseif(count($errMsgTemp) == 1){$errMsg = $errMsgTemp[0];}
+				if(count($errCodesTemp) > 1 ){$errCode = implode("|&|",$errCodesTemp);}elseif(count($errCodesTemp) == 1){$errCode = $errCodesTemp[0];}
+
+				$wpErr = array('error'=>$errMsg.$errData,'error_code'=>$errCode,'error_data'=>$errData);
+				return $wpErr;
+			}
+		}
+		return $result;
+	}
+}
+
 /* Main response function */
 if( !function_exists ( 'iwp_mmb_response' )) {
 
 	function iwp_mmb_response($response = false, $success = true)
 	{
 		$return = array();
+
+		$response = iwp_mmb_convert_wperror_obj_to_arr($response,'initial');
 		
 		if ((is_array($response) && empty($response)) || (!is_array($response) && strlen($response) == 0)){
 			$return['error'] = 'Empty response.';
@@ -730,7 +772,7 @@ if( !function_exists ('iwp_mmb_get_users')) {
 	{
 		global $iwp_mmb_core;
 		$iwp_mmb_core->get_user_instance();
-			$return = $iwp_mmb_core->user_instance->get_users($params);
+		$return = $iwp_mmb_core->user_instance->get_users($params);
 		if (is_array($return) && array_key_exists('error', $return))
 			iwp_mmb_response($return, false);
 		else {
@@ -1524,7 +1566,7 @@ if(!function_exists('iwp_mmb_shutdown')){
 		}
 		if ($isError){
 			
-			$response = '<span style="font-weight:700;">PHP Fatal error occured:</span> '.$error['message'].' in '.$error['file'].' on line '.$error['line'].'.';
+			$response = '<span style="font-weight:700;">PHP Fatal error occurred:</span> '.$error['message'].' in '.$error['file'].' on line '.$error['line'].'.';
 			if(stripos($error['message'], 'allowed memory size') !== false){
 				$response .= '<br>Try <a href="http://infinitewp.com/knowledge-base/increase-memory-limit/?utm_source=application&utm_medium=userapp&utm_campaign=kb" target="_blank">increasing the PHP memory limit</a> for this WP site.';
 			}
@@ -1777,10 +1819,10 @@ if (function_exists('add_action'))
 	add_action('init', 'iwp_mmb_plugin_actions', 99999);
 
 if (function_exists('add_action'))
-	add_action('wp_head', 'iwp_mmb_check_maintenance', 99999);
+	add_action('template_redirect', 'iwp_mmb_check_maintenance', 99999);
 
 if (function_exists('add_action'))
-	add_action('wp_head', 'iwp_mmb_check_redirects', 99999);
+	add_action('template_redirect', 'iwp_mmb_check_redirects', 99999);
 
 if (function_exists('add_filter'))
 	add_filter('install_plugin_complete_actions','iwp_mmb_iframe_plugins_fix');

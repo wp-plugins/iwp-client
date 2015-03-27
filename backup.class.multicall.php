@@ -2241,7 +2241,7 @@ class IWP_MMB_Backup_Multicall extends IWP_MMB_Core
 		global $wpdb;
 		$table_name = $wpdb->base_prefix . "iwp_backup_status";
 				
-		$rows = $wpdb->get_row($wpdb->prepare("SELECT * FROM ".$table_name." WHERE historyID = %d", $ID), ARRAY_A);
+		$rows = $wpdb->get_row($wpdb->prepare("SELECT * FROM ".$table_name." WHERE historyID = %d ORDER BY ID DESC LIMIT 1", $ID), ARRAY_A);
 						
 		return $rows;
 		
@@ -2523,7 +2523,7 @@ function task_now($task_name){
 		} else {
 			$result = false;
 		}
-		return $result; // true if $backup_file iz zipped successfully, false if error is occured in zip process
+		return $result; // true if $backup_file iz zipped successfully, false if error is occurred in zip process
     }
 	
 	
@@ -2836,13 +2836,12 @@ function iwp_mmb_direct_to_any_copy($source, $destination, $overwrite = false, $
 		
 		/////////////////// dev ////////////////////////
 		
-		
-		if (!$this->is_server_writable()) {
-			return array(
-			'error' => 'Failed, please add FTP details', 'error_code' => 'failed_please_add_ftp_details'
-			);  
-		} 
-		
+        if (!$this->is_server_writable()) {
+            return array(
+	            'error' => 'Failed, please add FTP details', 'error_code' => 'failed_please_add_ftp_details'
+            );
+        }
+
 		$url = wp_nonce_url('index.php?page=iwp_no_page','iwp_fs_cred');
 		ob_start();
 		if (false === ($creds = request_filesystem_credentials($url, '', false, ABSPATH, null) ) ) {
@@ -3868,7 +3867,7 @@ function ftp_backup($historyID,$args = '')
 		if(!$ret || $ret == FTP_FAILED)
 		{
 			return array(
-                'error' => 'FTP upload Error. ftp_nb_fput(): Append/Restart not permitted.',
+                'error' => "FTP upload Error. ftp_nb_fput(): Append/Restart not permitted. This feature is required for multi-call backup upload via FTP to work. Please contact your WP site's hosting provider and ask them to fix the problem. You can try dropbox, Amazon S3 or Google Driver as an alternative to it.",
                 'partial' => 1, 'error_code' => 'ftp_nb_fput_not_permitted_error'
             );
 		}
@@ -5279,7 +5278,7 @@ function ftp_backup($historyID,$args = '')
 			}
 		}catch (Exception $e){
 			print "An error occurred: " . $e->getMessage();
-			return array('error' => $e->getMessage(), 'error_code' => 'google_error_occured_list_results');
+			return array('error' => $e->getMessage(), 'error_code' => 'google_error_occurred_list_results');
 		}
 		
 		//create sub folder by site name
