@@ -518,6 +518,10 @@ function delete_task_now($task_name){
 		{
 			$exclude_extensions = array();
 		}
+		else if($exclude_extensions == 'eg. .zip,.mp4')
+		{
+			$exclude_extensions = array();
+		}
 		else
 		{
 			$exclude_extensions_array = explode(",",$exclude_extensions);
@@ -3833,7 +3837,7 @@ if (!function_exists('get_all_files_from_dir_recursive')) {
 	 * @param 	string 	$path 	Relative or absolute path to folder
 	 * @return 	void
 	 */
-	function get_all_files_from_dir_recursive($path,$ignore_array=array()) {
+	function get_all_files_from_dir_recursive($path) {
 		if ($path[strlen($path) - 1] === "/") $path = substr($path, 0, -1);
 		global $directory_tree, $ignore_array;
 		if(empty($ignore_array))
@@ -3842,19 +3846,23 @@ if (!function_exists('get_all_files_from_dir_recursive')) {
 		}
 		$directory_tree_temp = array();
 		$dh = @opendir($path);
-		
-		while (false !== ($file = @readdir($dh))) {
-				if (!in_array($file, array('.', '..'))) {
-					if (!in_array("$path/$file", $ignore_array)) {
-						if (!is_dir("$path/$file")) {
-							$directory_tree[] = "$path/$file";
-						} else {
-							get_all_files_from_dir_recursive("$path/$file");
+		if($dh !== false){
+			while (false !== ($file = @readdir($dh))) {
+					if (!in_array($file, array('.', '..'))) {
+						if (!in_array("$path/$file", $ignore_array)) {
+							if (!is_dir("$path/$file")) {
+								$directory_tree[] = "$path/$file";
+							} else {
+								get_all_files_from_dir_recursive("$path/$file");
+						}
 					}
 				}
 			}
+			@closedir($dh);
 		}
-		@closedir($dh);
+		else{
+			//code to process openDir failure.
+		}
 	}
 }
 

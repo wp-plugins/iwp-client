@@ -48,6 +48,10 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog ==
 
+= 1.3.12 =
+* Fix: In a few servers, readdir() was creating "Empty reply from server" error and in WPEngine it was creating 502 error while taking backup
+* Fix: .mp4 was excluding by default 
+
 = 1.3.11 =
 * Improvement: using wp_get_theme() instead of get_current_theme() which is deprecated in WordPress      
 * Fix: IWP failed to recognise the error from WP v4.0
