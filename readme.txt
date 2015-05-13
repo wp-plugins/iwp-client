@@ -48,6 +48,9 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog ==
 
+= 1.3.13 =
+* Fix: In certain cases, a multi-call backup of a large DB missed a few table's data.
+
 = 1.3.12 =
 * Fix: In a few servers, readdir() was creating "Empty reply from server" error and in WPEngine it was creating 502 error while taking backup
 * Fix: .mp4 was excluding by default 

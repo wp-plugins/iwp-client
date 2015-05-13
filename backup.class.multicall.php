@@ -575,6 +575,7 @@ class IWP_MMB_Backup_Multicall extends IWP_MMB_Core
 		}
 		else
 		{
+			iwp_mmb_print_flush('DB DUMP PHP CALL COUNT :' . $response_array['callCount']);
 			$callCount = $response_array['callCount'];
 			$backupStage = 'backupDBMultiCall';
 		}
@@ -676,9 +677,10 @@ class IWP_MMB_Backup_Multicall extends IWP_MMB_Core
 			$no_of_cols = count($table_fields);
 			$initialCount = 0;
 			$done_count = 0;
-			$breakingCount = $responseParams['breakingCount'];
-			if(!$breakingCount)
-			{
+			if($left_out_table == $table[0]){
+				$breakingCount = isset($responseParams['breakingCount']) ? $responseParams['breakingCount'] : 0;				//new changes
+			}
+			else{
 				$breakingCount = 0;
 			}
 			if ($count > 100)
