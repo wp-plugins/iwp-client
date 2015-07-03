@@ -292,7 +292,7 @@ class IWP_MMB_Backup_Multicall extends IWP_MMB_Core
 		extract($args);
 		//$task_name = $args['task_name'];	
 		//Prepare .zip file name  
-		$hash        = md5(time());
+		$hash        = md5(microtime(true).uniqid('',true).substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, rand(20,60)));
         $label       = $type ? $type : 'manual';
 		$backup_file_name = $this->site_name . '_' . $label . '_' . $what . '_' . date('Y-m-d') . '_' . $hash . '.zip';
         $backup_file = IWP_BACKUP_DIR . '/' . $this->site_name . '_' . $label . '_' . $what . '_' . date('Y-m-d') . '_' . $hash . '.zip';
