@@ -48,6 +48,11 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 
 == Changelog ==
 
+= 1.3.15 =
+* Improvement: Security improvement.
+* Fix: Parent theme update showing as child theme update.
+* Fix: Bug fixes.
+
 = 1.3.14 =
 * Fix: Bug fix.
 
