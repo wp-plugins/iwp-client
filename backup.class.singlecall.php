@@ -146,7 +146,6 @@ class IWP_MMB_Backup_Singlecall extends IWP_MMB_Core
     
     function set_backup_task($params){
 		if (!empty($params)) {
-        	
 			$this->statusLog($historyID, array('stage' => 'verification', 'status' => 'processing', 'statusMsg' => 'verificationInitiated'), $params);
 			
 			$this->set_resource_limit();
@@ -173,26 +172,25 @@ class IWP_MMB_Backup_Singlecall extends IWP_MMB_Core
         
         return false;
     }
-    
      
-function delete_task_now($task_name){
-	global $wpdb;
+	function delete_task_now($task_name){
+		global $wpdb;
 
-	$table_name = $wpdb->base_prefix . "iwp_backup_status";
-	
-	$tasks = $this->tasks;
-	//unset($tasks[$task_name]);
-	
-	
-	$delete_query = "DELETE FROM ".$table_name." WHERE taskName = '".$task_name."' ";
-	$deleteRes = $wpdb->query($delete_query);
-	
-	$this->update_tasks($tasks);
-	$this->cleanup();
-	
-	return $task_name;
-				
-}
+		$table_name = $wpdb->base_prefix . "iwp_backup_status";
+		
+		$tasks = $this->tasks;
+		//unset($tasks[$task_name]);
+		
+		
+		$delete_query = "DELETE FROM ".$table_name." WHERE taskName = '".$task_name."' ";
+		$deleteRes = $wpdb->query($delete_query);
+		
+		$this->update_tasks($tasks);
+		$this->cleanup();
+		
+		return $task_name;
+					
+	}
 
     /*
      * If Task Name not set then it's manual backup

@@ -4462,22 +4462,17 @@ function ftp_backup($historyID,$args = '')
   		
   		try {
 			
-  			$file = $dropbox->download($dropbox_destination.'/'.$backup_file); 
-			$handle = @fopen($temp, 'w'); 			
-			$result = fwrite($handle, $file);
-			fclose($handle);
-			
-			if($result)
-				return $temp;
-			else
-				return false;
-  		} catch (Exception $e) {
-  			$this->_log($e->getMessage());
-  			return array(
-  				'error' => $e->getMessage(),
-  				'partial' => 1
-  			);
-  		}
+			//exception should handle the errors
+  			$dropbox->download($dropbox_destination.'/'.$backup_file, $temp); 
+			return $temp;
+		} catch (Exception $e) {
+			$this->_log($e->getMessage());
+			return array(
+				'error' => $e->getMessage(),
+				'partial' => 1
+			);
+		}
+
 	}
 	
 	/*
