@@ -4,7 +4,7 @@ Plugin Name: InfiniteWP - Client
 Plugin URI: http://infinitewp.com/
 Description: This is the client plugin of InfiniteWP that communicates with the InfiniteWP Admin panel.
 Author: Revmakx
-Version: 1.3.16
+Version: 1.4.1
 Author URI: http://www.revmakx.com
 */
 /************************************************************
@@ -26,7 +26,7 @@ Author URI: http://www.revmakx.com
  **************************************************************/
 
 if(!defined('IWP_MMB_CLIENT_VERSION'))
-	define('IWP_MMB_CLIENT_VERSION', '1.3.16');
+	define('IWP_MMB_CLIENT_VERSION', '1.4.1');
 	
 
 
@@ -89,14 +89,19 @@ if( !function_exists ( 'iwp_mmb_filter_params' )) {
 if( !function_exists ('iwp_mmb_parse_request')) {
 	function iwp_mmb_parse_request()
 	{
-		if (!isset($HTTP_RAW_POST_DATA)) {
-			$HTTP_RAW_POST_DATA = file_get_contents('php://input');
+		global $HTTP_RAW_POST_DATA;
+		$HTTP_RAW_POST_DATA_LOCAL = NULL;
+		$HTTP_RAW_POST_DATA_LOCAL = file_get_contents('php://input');
+		if(empty($HTTP_RAW_POST_DATA_LOCAL)){
+			if (isset($HTTP_RAW_POST_DATA)) {
+				$HTTP_RAW_POST_DATA_LOCAL = $HTTP_RAW_POST_DATA;
+			}
 		}
 		
 		ob_start();
 		
 		global $current_user, $iwp_mmb_core, $new_actions, $wp_db_version, $wpmu_version, $_wp_using_ext_object_cache;
-		$data = base64_decode($HTTP_RAW_POST_DATA);
+		$data = base64_decode($HTTP_RAW_POST_DATA_LOCAL);
 		if ($data){
 			//$num = @extract(unserialize($data));
 			$unserialized_data = @unserialize($data);
@@ -153,11 +158,14 @@ if( !function_exists ('iwp_mmb_parse_request')) {
 				if(isset($params['username']) && !is_user_logged_in()){
 					$user = function_exists('get_user_by') ? get_user_by('login', $params['username']) : get_userdatabylogin( $params['username'] );
 					wp_set_current_user($user->ID);
-					//For WPE
-					if(@getenv('IS_WPE'))
-					wp_set_auth_cookie($user->ID);
+					//For WPE or Reload Data
+					//if(@getenv('IS_WPE') || $iwp_action == 'get_stats')
+					$SET_14_DAYS_VALIDITY = true;
+					wp_set_auth_cookie($user->ID, $SET_14_DAYS_VALIDITY);
 				}
-				
+				if ($action == 'get_cookie') {
+					iwp_mmb_response(true, true);
+				}
 				/* in case database upgrade required, do database backup and perform upgrade ( wordpress wp_upgrade() function ) */
 				if( strlen(trim($wp_db_version)) && !defined('ACX_PLUGIN_DIR') ){
 					if ( get_option('db_version') != $wp_db_version ) {
@@ -203,7 +211,8 @@ if( !function_exists ('iwp_mmb_parse_request')) {
 			}
 		} else {
 			//IWP_MMB_Stats::set_hit_count();
-                    $GLOBALS['HTTP_RAW_POST_DATA'] =  $HTTP_RAW_POST_DATA;
+            // $GLOBALS['HTTP_RAW_POST_DATA'] =  $HTTP_RAW_POST_DATA_LOCAL;
+            $HTTP_RAW_POST_DATA =  $HTTP_RAW_POST_DATA_LOCAL;
 		}
 		ob_end_clean();
 	}

@@ -2,7 +2,7 @@
 Contributors: infinitewp
 Tags: admin, administration, amazon, api, authentication, automatic, dashboard, dropbox, events, integration, manage, multisite, multiple, notification, performance, s3, security, seo, stats, tracking, infinitewp, updates, backup, restore, iwp, infinite
 Requires at least: 3.0
-Tested up to: 4.2.3
+Tested up to: 4.3
 Stable tag: trunk
 
 Install this plugin on unlimited sites and manage them all from a central dashboard.
@@ -47,6 +47,15 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 5. One-click updates
 
 == Changelog ==
+
+= 1.4.1 =
+* Fix: Branding should take effect which we lost in v1.4.0 without making any changes.
+
+= 1.4.0 =
+* Improvement: Compatibility with v2.5.0 and latest versions of addons.
+* Fix: Updates-related conflict with iThemes Security plugin and InfiniteWP fix.
+* Fix: Google Drive backups uploaded to some other infinitewp folder instead one present in main directory.
+* Fix: Clearing temp files created by PCLZip which is left because of timeout issue.
 
 = 1.3.16 =
 * Fix: Dropbox download while restore create memory issue Fatal Error: Allowed Memory Size of __ Bytes Exhausted
